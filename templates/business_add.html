@@ -1,0 +1,100 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div id="dashboard-content">
+			
+				<form class="businessForm" action="{{if .edit}}/businesses/edit/step2/{{.businessID.Hex}}{{else}}/businesses/add/step2{{end}}" method="post">
+					<div class="panel-body2">
+						<div class="form-group">
+							<label for="firstname">Business Name</label>
+								<input type="text" class="form-control businessName" name="business[name]" value="{{.business.Name}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="firstname">Business Phone</label>
+								<input type="text" class="form-control businessPhone" name="business[phone]" value="{{.business.Phone}}" placeholder="">
+						</div>
+												
+						<div class="form-group">
+							<label for="lastname">Area</label>
+								<input type="text" class="form-control businessArea" name="business[area]" value="{{.business.Area}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="business[country]">Country</label>
+								<select class="form-control businessCountry" name="business[country]">
+									<option value="">Choose Country</option>
+									{{range .countries}}
+									<option {{if eq . $.business.Country}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">State</label>
+								
+								<input type="text" class="form-control businessStateControl businessState {{if or (eq .business.Country "Australia") (eq .business.Country "United States") (eq .business.Country "Canada") (eq .business.Country "Australia")}}hidden{{end}}" name="business[state]" value="{{.business.State}}" placeholder="" {{if or (eq .business.Country "Australia") (eq .business.Country "Canada") (eq .business.Country "United States") (eq .business.Country "Australia")}}disabled{{end}}>
+								
+								<select class="form-control businessStateControl businessStateAll businessStateUsa {{if ne .business.Country "United States"}}hidden{{end}}" name="business[state]" {{if ne .business.Country "United States"}}disabled{{end}}>
+									<option value="">Choose State</option>
+									{{range .statesUSA}}
+									<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+								
+								<select class="form-control businessStateControl businessStateCanada {{if ne .business.Country "Canada"}}hidden{{end}}" name="business[state]" {{if ne .business.Country "Canada"}}disabled{{end}}>
+									<option value="">Choose State</option>
+									{{range .statesCanada}}
+									<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+								
+								<select class="form-control businessStateControl businessStateAustralia {{if ne .business.Country "Australia"}}hidden{{end}}" name="business[state]" {{if ne .business.Country "Australia"}}disabled{{end}}>
+									<option value="">Choose State</option>
+									{{range .statesAustralia}}
+									<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Postal Code / Zip Code</label>
+								<input type="text" class="form-control businessPostalCode" name="business[postal_code]" value="{{.business.PostalCode}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Website</label>
+								<input type="text" class="form-control businessWebsite" name="business[website]" value="{{.business.Website}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Address</label>
+								<input type="text" class="form-control businessAddress" name="business[address]" value="{{.business.Address}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Address 2</label>
+								<input type="text" class="form-control businessAddress2" name="business[address2]" value="{{.business.Address2}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">City</label>
+								<input type="text" class="form-control businessCity" name="business[city]" value="{{.business.City}}" placeholder="">
+						</div>
+						
+						
+						<input type="hidden" name="step" value="1">
+						<input type="hidden" name="businessID" value="{{.businessID}}">
+						<div class="form-group text-right"> 
+							<a href="{{if .businessID}}/businesses/add/step2/{{.businessID}}{{else}}/businesses/add/step2{{end}}" data-add="0" data-back="0" class="btn btn-default businessContinue">Continue</a>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+			<div class="form-status-holder"></div>
+		</div>
+	</div>
+</div>

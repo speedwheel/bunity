@@ -1,0 +1,85 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div id="dashboard-content">
+				<form class="businessForm" action="/businesses/add/step3" method="post">
+					<div class="panel-body2">						
+						<div class="form-group">
+							<label for="email">Industry</label>
+								<select class="form-control businessIndustry" name="business[industry]">
+									<option value="">Choose Industry</option>
+									{{range .data.industries}}
+									<option {{if eq . $.business.Industry}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+						</div>
+						
+						<div class="form-group">
+							<label for="email">Years in Business</label>
+								<select class="form-control businessYearsBusiness" name="business[yearsBusiness]">
+									<option value="">Choose Years in Business</option>
+									{{range .data.yearsBusiness}}
+									<option {{if eq . $.business.YearsBusiness}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+
+						</div>
+						
+						
+						<div class="form-group">
+							<label for="lastname">Number of Employees</label>
+								<select class="form-control businessNumberEmployees" name="business[numberEmployees]">
+								<option value="">Choose Number of Employees</option>
+								{{range .data.nrEmployees}}
+									<option {{if eq . $.business.NumberEmployees}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Size of Business</label>
+								<select class="form-control businessSizeBusiness" name="business[sizeBusiness]">
+								<option value="">Choose Size of Business</option>
+								{{range .data.sizeBusiness}}
+									<option {{if eq . $.business.SizeBusiness}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">What is your relationship to this business?</label>
+								<select class="form-control businessRelationshipBusiness" name="business[relationshipBusiness]">
+									<option value="">Choose What is your relationship to this business?</option>
+									{{range .data.relationshipBusiness}}
+									<option {{if eq . $.business.RelationshipBusiness}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">How did you hear of Zaphiri?</label>
+								<select class="form-control businessHowYourHear" name="business[howYourHear]">
+									<option value="">Choose How did you hear of Zaphiri?</option>
+									{{range .data.howYouHear}}
+									<option {{if eq . $.business.HowYourHear}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{end}}
+								</select>
+						</div>
+						<input type="hidden" name="step" value="2">
+						<input type="hidden" name="businessID" value="{{.businessID}}">
+						<div class="pull-left">
+							<a data-back="1" data-add="0" href="{{if .businessID}}/businesses/add/step1/{{.businessID}}{{else}}/businesses/add{{end}}" class="btn btn-default businessContinue">Back</a>
+						</div>
+						<div class="pull-right">
+							<a href="{{if .businessID}}/businesses/add/step3/{{.businessID}}{{else}}#{{end}}" data-back="0" data-add="{{if .businessID}}0{{else}}1{{end}}" class="btn btn-default businessContinue">Continue</a>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+			<div class="form-status-holder"></div>
+		</div>
+	</div>
+</div>

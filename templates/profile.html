@@ -1,0 +1,13 @@
+<div class="container">
+	<h1 class="text-center">My Profile</h1>
+	<br>
+	<br>
+	<a href="/users/edit">Edit</a>
+	<a href="/businesses">Businesses</a>
+	<ul>
+		<li>Firstname: {{.user.Firstname}}</li>
+		<li>Lastname: {{.user.Lastname}}</li>
+		<li>Email: {{.user.Email}}</li>
+		<li>Picture: <img src="{{.user.Image}}"></li>
+	</ul>
+</div>

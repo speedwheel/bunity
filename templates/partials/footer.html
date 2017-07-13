@@ -1,0 +1,46 @@
+
+	<div class="container-fluid footer">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="pull-right footer-logo">
+						kazeli
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script   src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"  ></script>
+   <!--<script src="/static/js/jquery.mmenu.min.js"></script>-->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script src="/static/js/dropzone.js"></script>
+  
+  <script src="/static/js/custom.js?v=1.01"></script>
+  <script src="/static/js/jquery.fancybox.min.js"></script>
+  
+  {{if not .auth}}
+   <script src="https://apis.google.com/js/api:client.js"></script>
+   <script src="/static/js/social.login.js"></script>
+   
+  {{end}}
+	<!--<script>var timeoutId2; tinymce.init({ selector:'textarea', plugins: "paste", paste_as_text: true,
+		setup:function(ed) {
+       ed.on('keyup', function(e) {
+			
+			clearTimeout(timeoutId2);
+				var timeoutId2 = setTimeout(function() {
+					ajaxBusiness();
+console.log();
+				}, 2000);
+			
+       });
+   },
+	init_instance_callback: "insert_contents",
+ });
+
+function insert_contents(inst){
+    inst.setContent('');
+}
+-->
+</body>
+</html>

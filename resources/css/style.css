@@ -1,0 +1,535 @@
+body {
+	font-family:arial;
+}
+.block {
+	display:block;
+}
+.container {
+	max-width: 1044px;
+}
+#search_input {
+	height:36px;
+	width:290px;
+	font-size:15px;
+	padding:0 7px;
+	display:inline-block;
+	vertical-align:top;
+	border:none;
+	border-top-left-radius:3px;
+	border-bottom-left-radius:3px;
+}
+#search {
+	height:36px;
+	width:54px;
+	display:inline-block;
+	vertical-align:top;
+	margin-left: -4px;
+	    background: #e1e1e1 url(../images/search-icon.jpg) 10px 4px no-repeat;
+	border:none;
+	border-top-right-radius:3px;
+	border-bottom-right-radius:3px;
+}
+.search-container {
+	height:36px;
+	margin-top:18px;
+	padding-right:40px
+}
+.logo-container {
+	padding-top: 11px;
+}
+.head-banner {
+	position:relative;
+}
+.header-top {
+	background:#000000;
+	height:75px;
+	margin-bottom:30px;
+}
+.cover-btn-container {
+	position:absolute;
+	top:10px;
+	left:10px;
+}
+.profile-btn-container {
+	position:absolute;
+	bottom:12px;
+	right:12px;
+	z-index:4;
+}
+.cover-btn-action {
+	width:21px;
+	height:18px;
+	display:block
+}
+.cover-btn-bg {
+	background-image: url(../images/camera-icon-white.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+	display:inline-block;
+	width:21px;
+	height:18px;
+}
+.main-menu-container {
+	border:1px solid #dfe0e4;
+	padding-left:260px;
+	position:relative;
+}
+
+.main-menu {
+	margin:0;
+	padding:0;
+	display: inline-block;
+	vertical-align:top;
+    overflow: hidden;
+}
+.main-menu > li {
+	float:left;
+	padding:8px 12px;
+	list-style:none;
+	border-right:1px solid #dde1e4;
+}
+.main-menu a {
+	color:#333333;
+	font-weight:bold;
+	padding:7px 14px;
+	font-size:12px;
+	display: block;
+	border-radius:3px;
+}
+.main-menu a:hover {
+	background:#333333;
+	color:#fff;
+	text-decoration:none;
+}
+.verify_kazeli {
+	padding-top:6px;
+	display: inline-block;
+	vertical-align:top;
+}
+.breadcrumbs {
+	margin-top:22px;
+	margin-bottom: 20px;
+}
+.breadcrumbs ul {
+	margin:0;
+	padding:0;
+}
+.breadcrumbs li {
+	list-style:none;
+	float:left;
+	font-size:12px;
+}
+.breadcrumbs a {
+	text-decoration:underline;
+	color:#696969;
+	font-size:12px;
+}
+.breadcrumbs .separator {
+	margin:0 3px
+}
+.title-box {
+	color:#fff;
+	background:#333333;
+	margin:0;
+	padding: 9px 8px;
+	font-size:18px;
+}
+.box-content {
+	padding:13px;
+	border:1px solid #dfe0e4;
+	margin-bottom:8px;
+}
+.testimonial-box {
+	border-bottom:1px solid #606060;
+	padding:20px 0;
+}
+.box-content .testimonial-box:last-child {
+	border-bottom:none;
+	padding-bottom:0;
+}
+.link-right a {
+	color:#0a79c0;
+	text-decoration:underline;
+}
+.tip_boost {
+	color:#fff;
+	background:#65992a;
+	border-radius:3px;
+	padding:3px 0;
+	font-size:13px;
+	margin-bottom:7px;
+}
+.right-content .title-box {
+	font-size:15px;
+	padding:6px 8px;
+}
+.info-box small {
+	font-size:11px;
+}
+.info-box .box-small {
+	margin-bottom:10px;
+}
+.info-box span, .info-box a {
+	font-size:13px;
+	line-height:17px;
+}
+.business-box {
+	margin-bottom:10px;
+}
+.left-content {
+	padding-right:4px;
+}
+.right-content {
+	padding-left:4px;
+}
+.small-profile-pic {
+	display:inline-block;
+	vertical-align:top;
+	margin-right:8px;
+}
+.small-profile-pic img {
+	border-radius:50%;
+}
+.user-details {
+	padding-top:18px;
+	padding-right:60px;
+}
+.profile-name {
+	color:#fff;
+	background:#2f2f2f;
+	display:inline-block;
+	vertical-align:top;
+	padding: 7px 14px;
+}
+.home-topbar {
+	padding: 7px 14px;
+	color:#fff;
+	display:inline-block;
+	vertical-align:top;
+}
+.profile-name:hover, .home-topbar:hover {
+	color:#fff;
+	text-decoration:none;
+}
+.separator-topbar {
+	height:36px;
+	background:#333333;
+	width:1px;
+	display:inline-block;
+	vertical-align:top;
+	margin-left:12px;
+}
+.user-notifications {
+	padding-top: 24px;
+	    padding-right: 38px;
+}
+.notification-btn {
+	background:url(../images/globe-xxl-gry.png) no-repeat;
+	width:24px;
+	height:24px;
+	display:inline-block;
+	background-size:contain;
+	position:relative;
+	margin-right:1px;
+	margin-right:17px;
+}
+.notifications-count {
+	height:17px;
+	width:17px;
+	position:absolute;
+	background:#bc1b2b;
+	top:-8px;
+	right:-13px;
+	color:#f6e6e7;
+	text-align:center;
+	line-height:17px;
+}
+.settings-btn {
+	background:url(../images/gear-512.png) no-repeat;
+	width:26px;
+	height:26px;
+	display:inline-block;
+	background-size:contain;
+	position:relative;
+	
+}
+.arrow-down {
+	position:absolute;
+	width: 0; 
+	height: 0; 
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 9px solid #4d4d4f;
+	right:-10px;
+	bottom:0;
+}
+.upgrade-btn {
+	background:#f78200;
+	border-radius:3px;
+	width:100px;
+	height:28px;
+	line-height:28px;
+	text-align:center;
+	color:#fff;
+	font-size:16px;
+	display:block;
+}
+.upgrade-btn:hover {
+	color:#fff;
+	text-decoration:none;
+	text-decoration:none;
+}
+.upgrade-box {
+	padding-top:22px;
+}
+.footer {
+	background:#000;
+	margin-top:30px;
+}
+.footer-logo {
+	color:#404040;
+	font-size:30px;
+	padding:20px 0;
+}
+
+/* side menu */
+
+
+#hamburger:before {
+    top: 12px;
+}
+#hamburger:before, #hamburger:after, #hamburger > a span {
+    background: #fff;
+    content: '';
+    display: block;
+    width: 30px;
+    height: 2px;
+    position: absolute;
+    left: 20px;
+}
+
+#mm-0 {
+	overflow: auto;
+}
+.mm-opened .open-hamburger {
+	display:initial;
+}
+
+.btn-large {
+	font-size: 16px;
+	background:#fff;
+	border-color: #c4c4c4;
+	color: #484848;
+}
+.btn-facebook {
+	border-color: #3B5998;
+    background-color: #3B5998;
+    color: #fff;
+}
+.btn-facebook:hover, .btn-facebook:focus {
+    border-color: #4568b2;
+    background-color: #4568b2;
+    color: #fff;
+}
+.btn-block {
+    display: block;
+    white-space: normal;
+    width: 100%;
+}
+.icon-container .fa, .icon-btn.btn-large .icon {
+    position: absolute;
+    font-size: 24px;
+    top: 6px;
+    left: 20px;
+}
+.signup-login-form__btn-xl {
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+    padding-left: 27px !important;
+    padding-right: 27px !important;
+    font-weight: normal;
+}
+.signup-login-form__btn-xl .fa {
+    font-size: 18px !important;
+    line-height: 50px;
+}
+.icon-btn.btn-large {
+    position: relative;
+}
+
+#login .modal-dialog, #signup .modal-dialog {
+	max-width:500px;
+}
+.space-1 {
+    margin-bottom: 6px;
+}
+.icon-btn.btn-large .icon-google-image {
+    display: block;
+    width: 20px;
+    top: 22px !important;
+    left: 20px;
+    height: 22px;
+}
+.signup-or-separator {
+    background: none;
+    height: 34px;
+    position: relative;
+    text-align: center;
+}
+.signup-or-separator--text {
+    background-color: #fff;
+    display: inline-block;
+    padding: 8px;
+	margin:0;
+}
+.signup-or-separator hr {
+    margin: -16px auto 10px;
+    width: 100%;
+}
+.error-form {
+    background: #f4d3de;
+    border: 1px solid #f01d4d !important;
+    box-shadow: inset 0 1px 2px #aebad2;
+    -moz-box-shadow: inset 0 1px 2px #aebad2;
+    -webkit-box-shadow: inset 0 1px 2px #aebad2;
+}
+
+/* UPLOAD BAR */
+#dragandrophandler
+{
+border:2px dotted #0B85A1;
+width:400px;
+color:#92AAB0;
+text-align:left;vertical-align:middle;
+padding:10px 10px 10 10px;
+margin-bottom:10px;
+font-size:200%;
+}
+.progressBar {
+    width: 200px;
+    height: 22px;
+    border: 1px solid #ddd;
+    border-radius: 5px; 
+    overflow: hidden;
+    display:inline-block;
+    margin:0px 10px 5px 5px;
+    vertical-align:top;
+}
+ 
+.progressBar div {
+    height: 100%;
+    color: #fff;
+    text-align: right;
+    line-height: 22px; /* same as #progressBar height if we want text middle aligned */
+    width: 0;
+    background-color: #0ba1b5; border-radius: 3px; 
+}
+.statusbar
+{
+    border-top:1px solid #A9CCD1;
+    min-height:25px;
+    padding:10px 10px 0px 10px;
+    vertical-align:top;
+}
+.statusbar:nth-child(odd){
+    background:#EBEFF0;
+}
+.filename
+{
+display:inline-block;
+vertical-align:top;
+}
+.filesize
+{
+	display:inline-block;
+	vertical-align:top;
+	color:#30693D;
+	margin-left:10px;
+	margin-right:5px;
+}
+.abort{
+    background-color:#A8352F;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    border-radius:4px;display:inline-block;
+    color:#fff;
+    font-family:arial;font-size:13px;font-weight:normal;
+    padding:4px 15px;
+    cursor:pointer;
+    vertical-align:top
+ }
+ 
+ /* dropzone */
+ #galleryUpload {
+	 
+ }
+ .dropzone .dz-preview .dz-image img {
+	 width:120px;
+	 height:120px;
+ }
+#mceu_19, #mceu_17, #mceu_21, #mceu_12, #mceu_13, #mceu_2 {
+    display: none !important;
+}
+
+.head-banner {
+	position:relative;
+	height:295px;
+	overflow:hidden;
+}
+.head-banner img {
+ position: absolute;
+  left: 50%;
+  top: 50%;
+  height: auto;
+  width: 100%;
+  -webkit-transform: translate(-50%,-50%);
+      -ms-transform: translate(-50%,-50%);
+          transform: translate(-50%,-50%);
+	-webkit-backface-visibility: hidden;
+}
+.galleryContainer .galleryImageSIngle:nth-child(2n+1) {
+	border-right: 1px solid #fff;
+}
+.galleryContainer .galleryImageSIngle {
+	border-bottom: 1px solid #fff;
+}
+.galleryContainer img, .profile-picture img {
+ position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 100%;
+  width: auto;
+  -webkit-transform: translate(-50%,-50%);
+      -ms-transform: translate(-50%,-50%);
+          transform: translate(-50%,-50%);
+	-webkit-backface-visibility: hidden;
+}
+.profile-picture img {
+	height:auto!important;
+}
+.galleryImageSIngle {
+	float:left;
+	width:50%;
+	height:157px;
+	position:relative;
+	overflow:hidden;
+}
+
+.portrait img {
+  width: 100%;
+  height: auto;
+}
+.profile-picture {
+	position:absolute;
+	top: -125px;
+	left:36px;
+	padding:9px;
+	background-color:#f6f7f9;
+	border:1px solid #dde0e5;
+	width:220px;
+	height:146px;
+	overflow:hidden;
+	background-color: #f6f7f9;
+    outline: 1px solid #dde0e5;
+    border: 10px solid #f6f7f9;
+}

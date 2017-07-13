@@ -1,0 +1,10 @@
+title = "Main Config"
+
+[[database]]
+	[database.mongo]
+		username = "speedwheel"
+		passowrd = "kbn2017"
+		server = "207.154.215.35"
+		
+[user]
+	secretkey = "ZA1XSWSekret128cdevfraASDFlkjhHg"

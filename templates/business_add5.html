@@ -1,0 +1,44 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<div id="dashboard-content">
+				<form class="businessForm" action="/businesses/add/finish" method="post">
+					<div class="panel-body2">
+						Gallery (max 5 files):
+						<div id="galleryUpload" class="dropzone"></div>
+						Profile (max 1 file):
+						<div id="profileUpload" class="dropzone"></div>
+						Cover (max 1 file):
+						<div id="coverUpload" class="dropzone"></div>	
+						<input type="hidden" id="businessID" name="businessID" value="{{.businessID}}">
+						<br>
+						<div class="pull-left">
+							<a data-back="1" data-add="0" href="/businesses/add/step4/{{.businessID}}" class="btn btn-default businessContinue">Back</a>
+						</div>
+						<div class="pull-right">
+							<a href="/businesses/add/step6/{{.businessID}}" data-back="0" data-add="0" class="btn btn-default businessContinue">Continue</a>
+						</div>
+						<input type="hidden" id="userID" name="userID" value="{{.userID}}">
+						<input type="hidden" name="step" value="5">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+var thumbnailUrls = [];
+{{range .galleryImages}}
+thumbnailUrls.push({{.}});
+{{end}}
+
+var profileThumbnailUrls = [];
+{{range .profileImages}}
+profileThumbnailUrls.push({{.}});
+{{end}}
+
+var coverThumbnailUrls = [];
+{{range .coverImages}}
+coverThumbnailUrls.push({{.}});
+{{end}}
+</script>

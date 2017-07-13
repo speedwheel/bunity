@@ -1,0 +1,250 @@
+<div class="container">
+		<div class="row">
+			<div class="col-sm-10 left-container">
+				<div class="head-banner">
+					{{if index (index .business.Businesses 0).Cover}}
+					<img src="/static/uploads/{{.business.Id.Hex}}/{{(index .business.Businesses 0).Id.Hex}}/cover/{{index (index .business.Businesses 0).Cover 0}}" class="img-responsive">
+					{{else}}
+					<img src="/static/images/child_banner.jpg" class="img-responsive">
+					{{end}}
+					{{if .auth}}
+					<div class="cover-btn-container">
+							<a class="cover-btn-action updateGallery" data-action="cover" href="#imageUploadContainer"><i class="cover-btn-bg"></i></a>
+					</div>
+					{{end}}
+				</div>
+				<div class="main-menu-container">
+					<div class="profile-picture {{getRatio (index (index .business.Businesses 0).Profile 0)}}">
+						<div class="inner-profile-picture">
+							{{if .auth}}
+							<div class="profile-btn-container">
+								<a class="cover-btn-action updateGallery" data-action="profile" href="#imageUploadContainer"><i class="cover-btn-bg"></i></a>
+							</div>
+							{{end}}
+							{{if index (index .business.Businesses 0).Profile}}
+							<img src="/static/uploads/{{.business.Id.Hex}}/{{(index .business.Businesses 0).Id.Hex}}/profile/{{index (index .business.Businesses 0).Profile 0}}" class="img-responsive">
+							{{else}}
+							<img src="/static/images/bridgeway-logo.jpg" class="img-responsive">
+							{{end}}
+						</div>
+					</div>
+					<ul class="main-menu">
+						<li><a href="/{{(index .business.Businesses 0).Id.Hex}}">Business Profile</a></li>
+						<li><a href="/{{(index .business.Businesses 0).Id.Hex}}/maps">Maps</a></li>
+						<li><a href="/{{(index .business.Businesses 0).Id.Hex}}/webresults">Web Results</a></li>
+						<li><a href="#">Articles</a></li>
+					</ul>
+					<!--<div class="verify_kazeli">
+						<img src="/static/images/verify_kazeli.jpg" class="img-responsive">
+					</div>-->
+				</div>
+				
+				<div class="row breadcrumbs">
+			<div class="col-sm-12">
+				<ul>
+					<li><a href="#">USA</a></li>
+					<li><span class="separator">~</span><a href="#">Catasauqua . PA</a></li>
+					<li><span class="separator">~</span><a href="#">Catasauqua Education</a></li>
+					<li><span class="separator">~</span><a href="#">Catasauqua E-Learning</a></li>
+					<li><span class="separator">~</span>Bridgeway Academy</li>
+				</ul>
+			</div>
+		</div>
+		
+		<div class="row middle-content">
+			<div class="col-sm-7 left-content">
+				<div class="text-box">
+					<h3 class="title-box">{{(index .business.Businesses 0).Name}}</h3>
+					<div class="box-content">
+						{{(index .business.Businesses 0).Description}}
+					</div>
+				</div>
+				
+				
+				<div class="text-box">
+					<h3 class="title-box">Recommendations</h3>
+					<div class="box-content">
+						<div class="link-right text-right">
+							<a href="#">Request a Recommendation</a>
+						</div>
+						<div class="testimonial-box">
+							<i>Nam de isto magna dissensio est. Haeret in salebra. Nunc omni virtuti vitium contrario noesse divitias, praepositum esse dicis? Respondent extrema primis, media utrisque, omnia omnibus. Qui-vere falsone, quaerere mittimus-dicitur - <strong>oculis se privasse;</strong></i>
+						</div>
+						<div class="testimonial-box">
+							<i>Nam de isto magna dissensio est. Haeret in salebra. Nunc omni virtuti vitium contrario noesse divitias, praepositum esse dicis? Respondent extrema primis, media utrisque, omnia omnibus. Qui-vere falsone, quaerere mittimus-dicitur - <strong>oculis se privasse;</strong></i>
+						</div>
+						<div class="testimonial-box">
+							<i>Nam de isto magna dissensio est. Haeret in salebra. Nunc omni virtuti vitium contrario noesse divitias, praepositum esse dicis? Respondent extrema primis, media utrisque, omnia omnibus. Qui-vere falsone, quaerere mittimus-dicitur - <strong>oculis se privasse;</strong></i>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="col-sm-5 right-content">
+				<div class="tip_boost text-center">
+					Tip! Boost your views and share on Facebook
+				</div>
+				<div class="text-box info-box">
+					<h3 class="title-box">Info</h3>
+					<div class="box-content">
+						{{if .auth}}
+						<div class="link-right text-right">
+							<a href="/businesses/add/step1/{{(index .business.Businesses 0).Id.Hex}}">Update</a>
+						</div>
+						{{end}}
+						<div class="address-box box-small">
+							<small class="block">Address</small>
+							<span class="block">{{(index .business.Businesses 0).Address}}, {{(index .business.Businesses 0).State}}, {{(index .business.Businesses 0).Country}}, {{(index .business.Businesses 0).City}}</span>
+						</div>
+						<div class="phone-box box-small">
+							<small class="block">Phone</small>
+							<span class="block">{{(index .business.Businesses 0).Phone}}</span>
+						</div>
+						{{if (index .business.Businesses 0).Website}}
+						<div class="website-box box-small">
+							<small class="block">Website</small>
+							<a href="{{(index .business.Businesses 0).Website}}">{{(index .business.Businesses 0).Website}}</a>
+						</div>
+						{{end}}
+						<div class="website-box box-small">
+							<small class="block">Social</small>
+							<ul class="list-inline unstyled">
+								{{if (index .business.Businesses 0).Social.Facebook}}
+								<li class="list-inline-item"><a href="{{(index .business.Businesses 0).Social.Facebook}}"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+								{{end}}
+								{{if (index .business.Businesses 0).Social.Google}}
+								<li class="list-inline-item"><a href="{{(index .business.Businesses 0).Social.Google}}"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
+								{{end}}
+								{{if (index .business.Businesses 0).Social.Instagram}}
+								<li class="list-inline-item"><a href="{{(index .business.Businesses 0).Social.Instagram}}"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+								{{end}}
+								{{if (index .business.Businesses 0).Social.Youtube}}
+								<li class="list-inline-item"><a href="{{(index .business.Businesses 0).Social.Youtube}}"><i class="fa fa-youtube" aria-hidden="true"></i></a></li>
+								{{end}}
+								{{if (index .business.Businesses 0).Social.Pinterest}}
+								<li class="list-inline-item"><a href="{{(index .business.Businesses 0).Social.Pinterest}}"><i class="fa fa-pinterest" aria-hidden="true"></i></a></li>
+								{{end}}
+								{{if (index .business.Businesses 0).Social.Linkedin}}
+								<li class="list-inline-item"><a href="{{(index .business.Businesses 0).Social.Linkedin}}"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+								{{end}}
+								{{if (index .business.Businesses 0).Social.Linkedin}}
+								<li class="list-inline-item"><a href="{{(index .business.Businesses 0).Social.Twitter}}"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+								{{end}}
+							</ul>
+							
+						</div>
+					</div>
+				</div>
+				
+				<div class="text-box info-box">
+					<h3 class="title-box">Photos</h3>
+					<div class="box-content">
+					{{if .auth}}
+						<div style="margin-bottom:10px;" class="link-right text-right">
+							<a data-action="gallery" class="updateGallery" href="#imageUploadContainer">Update</a>
+						</div>
+					{{end}}
+						<div class="galleryContainer" style="overflow:hidden;">
+							{{if index (index .business.Businesses 0).Gallery}}
+								{{range (index .business.Businesses 0).Gallery}}
+									<div class="galleryImageSIngle {{getRatio .}}">
+										<a class="businessGallery" data-fancybox="gallery" href="/static/uploads/{{$.business.Id.Hex}}/{{(index $.business.Businesses 0).Id.Hex}}/gallery/{{.}}" href="#"><img src="/static/uploads/{{$.business.Id.Hex}}/{{(index $.business.Businesses 0).Id.Hex}}/gallery/{{.}}"></a>
+									</div>
+								{{end}}
+							{{end}}
+						</div>
+					</div>
+				</div>
+				
+				<div class="text-box info-box">
+					<h3 class="title-box">Related Businesses</h3>
+					<div class="box-content">
+						<div class="row business-box">
+							<div class="col-sm-4 business-img">
+								<img src="/static/images/business-logo.jpg" class="img-responsive">
+							</div>
+							<div class="col-sm-8 business-text">
+								<strong class="block">Bridgeway Academy</strong>
+								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
+							</div>
+						</div>
+						<div class="row business-box">
+							<div class="col-sm-4 business-img">
+								<img src="/static/images/business-logo.jpg" class="img-responsive">
+							</div>
+							<div class="col-sm-8 business-text">
+								<strong class="block">Bridgeway Academy</strong>
+								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
+							</div>
+						</div>
+						<div class="row business-box">
+							<div class="col-sm-4 business-img">
+								<img src="/static/images/business-logo.jpg" class="img-responsive">
+							</div>
+							<div class="col-sm-8 business-text">
+								<strong class="block">Bridgeway Academy</strong>
+								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
+							</div>
+						</div>
+						<div class="row business-box">
+							<div class="col-sm-4 business-img">
+								<img src="/static/images/business-logo.jpg" class="img-responsive">
+							</div>
+							<div class="col-sm-8 business-text">
+								<strong class="block">Bridgeway Academy</strong>
+								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
+							</div>	
+						</div>
+						<div class="row business-box">
+							<div class="col-sm-4 business-img">
+								<img src="/static/images/business-logo.jpg" class="img-responsive">
+							</div>
+							
+							<div class="col-sm-8 business-text">
+								<strong class="block">Bridgeway Academy</strong>
+								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
+							</div>	
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+				
+			</div>
+			<div class="col-sm-2 right-container">
+				
+			</div>
+		</div>
+	</div>
+	<input type="hidden" id="userID" name="userID" value="{{.business.Id.Hex}}">
+	<input type="hidden" id="businessID" name="businessID" value="{{(index .business.Businesses 0).Id.Hex}}">
+	<div style="min-width:800px;" id="imageUploadContainer" style="display:none;"></div>
+<script>
+var thumbnailUrls=[];
+var profileThumbnailUrls=[];
+var coverThumbnailUrls=[];
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA4BkatAW02CtcmFK4uQUo25jwXPVt0F20&callback=initMap"></script>
+<script>
+var lat = {{(index .business.Businesses 0).Map.Lat}};
+var lng = {{(index .business.Businesses 0).Map.Lng}};
+function initMap() {
+  var myLatLng = {lat: lat, lng: lng};
+
+  var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: myLatLng
+  });
+
+  var marker = new google.maps.Marker({
+    position: myLatLng,
+    map: map,
+    title: 'Hello World!'
+  });
+}
+</script>
+<style>
+#map {
+  height: 400px;
+}
+</style>

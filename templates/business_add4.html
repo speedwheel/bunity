@@ -1,0 +1,60 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div id="dashboard-content">
+			
+				<form class="businessForm" action="{{if .edit}}/businesses/edit/step2/{{.businessID.Hex}}{{else}}/businesses/add/step2{{end}}" method="post">
+					<div class="panel-body2">
+						<div class="form-group">
+							<label for="lastname">Facebook</label>
+							<input type="text" class="form-control businessSocial" name="business[facebook]" value="{{.business.Social.Facebook}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Google</label>
+							<input type="text" class="form-control businessSocial" name="business[google]" value="{{.business.Social.Google}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Instagram</label>
+							<input type="text" class="form-control businessSocial" name="business[instagram]" value="{{.business.Social.Instagram}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Youtube</label>
+							<input type="text" class="form-control businessSocial" name="business[youtube]" value="{{.business.Social.Youtube}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Pinterest</label>
+							<input type="text" class="form-control businessSocial" name="business[pinterest]" value="{{.business.Social.Pinterest}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Linkedin</label>
+							<input type="text" class="form-control businessSocial" name="business[linkedin]" value="{{.business.Social.Linkedin}}" placeholder="">
+						</div>
+						
+						<div class="form-group">
+							<label for="lastname">Twitter</label>
+							<input type="text" class="form-control businessSocial" name="business[twitter]" value="{{.business.Social.Twitter}}" placeholder="">
+						</div>
+						
+						<input type="hidden" name="step" value="4">
+						<input type="hidden" name="businessID" value="{{.businessID}}">
+						<div class="pull-left">
+							<a data-back="1" data-add="0" href="/businesses/add/step3/{{.businessID}}" class="btn btn-default businessContinue">Back</a>
+						</div>
+						<div class="form-group text-right"> 
+							<a href="{{if .businessID}}/businesses/add/step5/{{.businessID}}{{else}}/businesses/add/step2{{end}}" data-add="0" data-back="0" class="btn btn-default businessContinue">Continue</a>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+			<div class="form-status-holder"></div>
+		</div>
+	</div>
+</div>

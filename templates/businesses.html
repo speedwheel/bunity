@@ -1,0 +1,40 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-3">
+			{{ render "partials/businesses_sidebar.html"}}
+		</div>
+		<div class="col-md-9">
+			<div id="dashboard-content">
+				<ul class="list-unstyled">
+				
+				{{range .business}}
+				<li style="border:1px solid #000; padding: 10px 0;margin-bottom:5px;">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/businesses/delete/{{.Id.Hex}}">Delete</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<a href="/businesses/add/step1/{{.Id.Hex}}">Edit</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<a href="/{{.Id.Hex}}">View</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<br>
+					<br>
+					<ul>
+						<li>ID:{{.Id.Hex}}</li>
+						<li>Name:{{.Name}}</li>
+						<li>Phone Number: {{.Phone}}</li>
+						<li>Address:{{.Address}}</li>
+						<li>State:{{.State}}</li>
+						<li>Postal Code:{{.PostalCode}}</li>
+						<li>Area:{{.Area}}</li>
+						<li>Country:{{.Country}}</li>
+						<li>Industry:{{.Industry}}</li>
+						<li>Years in Bussines:{{.YearsBusiness}}</li>
+						<li>Number of Employees:{{.NumberEmployees}}</li>
+						<li>Size of Business:{{.SizeBusiness}}</li>
+						<li>What is your relationship to this business?:{{.RelationshipBusiness}}</li>
+						<li>How did you hear of Zaphiri?:{{.HowYourHear}}</li>
+						<li>Description:{{.Description}}</li>
+					</ul>
+				</li>
+				{{end}}
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>

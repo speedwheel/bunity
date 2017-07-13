@@ -1,0 +1,25 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div id="dashboard-content">
+				<form class="businessForm" action="/businesses/add/finish" method="post">
+					<div class="panel-body2">
+						<input type="text" class="phoneSMSField" name="phoneVerification">
+						<input type="hidden" id="businessID" name="businessID" value="{{.businessID}}">
+						<input type="hidden" name="step" value="6">
+					</div>
+				</form>
+			</div>
+			<div class="pull-left">
+				<a data-back="1" data-add="0" href="/businesses/add/step5/{{.businessID}}" class="btn btn-default businessContinue">Back</a>
+			</div>
+			<div class="pull-right">
+				<a href="/businesses/add/step7/{{.businessID}}" data-back="0" data-add="0" class="btn btn-default businessSendNumber">Continue</a>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+			<div class="form-status-holder"></div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,8 @@
+title = "Main Config"
+
+[database]
+	[database.mongo]
+		username = "speedwheel"
+		password = "kbn2017"
+		server = "localhost"
+		database = "kbn"
