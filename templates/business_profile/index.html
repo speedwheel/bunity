@@ -14,7 +14,7 @@
 					{{end}}
 				</div>
 				<div class="main-menu-container">
-					<div class="profile-picture {{getRatio (index (index .business.Businesses 0).Profile 0)}}">
+					<div class="profile-picture {{if index (index .business.Businesses 0).Profile}} {{getRatio (index (index .business.Businesses 0).Profile 0)}} {{end}}">
 						<div class="inner-profile-picture">
 							{{if .auth}}
 							<div class="profile-btn-container">
@@ -32,7 +32,7 @@
 						<li><a href="/{{(index .business.Businesses 0).Id.Hex}}">Business Profile</a></li>
 						<li><a href="/{{(index .business.Businesses 0).Id.Hex}}/maps">Maps</a></li>
 						<li><a href="/{{(index .business.Businesses 0).Id.Hex}}/webresults">Web Results</a></li>
-						<li><a href="#">Articles</a></li>
+						<li><a href="#" class="businessLikeBtn {{if .liked}}liked{{end}}"><i class="fa fa-thumbs-up" aria-hidden="true"></i> Like <span class="nrLikes">{{.nrLIkes}}</span></a></li>
 					</ul>
 					<!--<div class="verify_kazeli">
 						<img src="/static/images/verify_kazeli.jpg" class="img-responsive">
@@ -223,26 +223,13 @@
 var thumbnailUrls=[];
 var profileThumbnailUrls=[];
 var coverThumbnailUrls=[];
+{{if .liked}}
+var liked = true;
+{{else}}
+var liked = false;
+{{end}}
 </script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA4BkatAW02CtcmFK4uQUo25jwXPVt0F20&callback=initMap"></script>
-<script>
-var lat = {{(index .business.Businesses 0).Map.Lat}};
-var lng = {{(index .business.Businesses 0).Map.Lng}};
-function initMap() {
-  var myLatLng = {lat: lat, lng: lng};
 
-  var map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 12,
-    center: myLatLng
-  });
-
-  var marker = new google.maps.Marker({
-    position: myLatLng,
-    map: map,
-    title: 'Hello World!'
-  });
-}
-</script>
 <style>
 #map {
   height: 400px;

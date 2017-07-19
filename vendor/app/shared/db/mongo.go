@@ -30,7 +30,6 @@ func init() {
 
 		mainSession.SetMode(mgo.Monotonic, true)
 		mainDb = mainSession.DB(cfg.DB.Mongo.Database)
-
 	}
 
 }
@@ -39,7 +38,12 @@ func (this *MgoDb) Init() *mgo.Session {
 
 	this.Session = mainSession.Copy()
 	this.Db = this.Session.DB(cfg.DB.Mongo.Database)
-
+	
+	index := mgo.Index{
+		Key: []string{"$text:businesses.name"},
+	  }
+	this.C("users").EnsureIndex(index)
+	
 	return this.Session
 }
 

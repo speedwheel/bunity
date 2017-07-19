@@ -533,3 +533,17 @@ vertical-align:top;
     outline: 1px solid #dde0e5;
     border: 10px solid #f6f7f9;
 }
+.main-menu-container .businessLikeBtn {
+	padding: 6px 14px;
+}
+.main-menu-container .businessLikeBtn:hover {
+	background:#fff;
+	color:#333333;
+	text-decoration:underline;    
+}
+.main-menu-container .businessLikeBtn i {
+	font-size:16px;
+}
+.businessLikeBtn.liked {
+	color:#4673cc!important;
+}

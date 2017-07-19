@@ -27,7 +27,7 @@ func KazeliApp() *iris.Application {
 	
 	app.Use(func(ctx context.Context) {
 		session := db.Sessions.Start(ctx)
-		//ctx.Gzip(true)
+	     //ctx.Gzip(true)
 		ctx.ViewData("auth", session.Get("userAuth"))
 		userSession := model.User{}
 		if (session.Get("user") != nil) {

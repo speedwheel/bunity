@@ -16,6 +16,7 @@ type (
 		Lastname   string `json:"lastname" bson:"lastname"  form:"lastname" facebook:"last_name"`
 		Email  string `json:"email" bson:"email"  form:"email" facebook:"email"`
 		Image string `json:"image" bson:"image"  form:"image" facebook:"url"`
+		Liked []bson.ObjectId `json:"liked" bson:"liked" form:"liked,omitempty" facebook:"-"`
 		Account Account
 		Businesses []Business
 		
@@ -53,6 +54,9 @@ type (
 		Profile []string `json:"profile" bson:"profile" form:"profile,omitempty" facebook:"-"`
 		Cover []string `json:"cover" bson:"cover" form:"profile,omitempty" facebook:"-"`
 		SmsCode string `json:"smsCode" bson:"smsCode" form:"smsCode,omitempty" facebook:"-"`
+		Likes []bson.ObjectId `json:"likes" bson:"likes" form:"likes,omitempty" facebook:"-"`
+		Verified uint8 `json:"check" bson:"check" form:"check,omitempty" facebook:"-"`
+		Premium uint8 `json:"pro" bson:"pro" form:"pro,omitempty" facebook:"-"`
 		Social Social
 		Map Map
 	}

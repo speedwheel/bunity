@@ -26,13 +26,18 @@ import(
 	"app/shared/general"
 	"math"
 	//"github.com/patrickmn/go-cache"
-	//"github.com/kr/pretty"
+	"github.com/kr/pretty"
 
 )
 
 type FormError struct {
 	Class string
 	Message string
+}
+
+type LiveResults struct {
+	Name string
+	Image[] string
 }
 
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -599,6 +604,8 @@ func BusinessAddFinish(ctx context.Context) {
 		business = businessSession.(model.Business)
 		business.Id = bson.NewObjectId()
 		business.Description = template.HTML(ctx.FormValue("business[description]"))
+		business.Verified = 0
+		business.Premium = 0
 		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$push": bson.M{"businesses": &business}}); err != nil {
 			panic(err)
 		}
@@ -789,6 +796,15 @@ func BusinessProfilePage(ctx context.Context) {
 		return
 	}
 	
+	session := db.Sessions.Start(ctx)
+	userSessionC := session.Get("user")
+	if userSessionC != nil {	
+		userSession := session.Get("user").(model.User)
+		liked := IsLike(businessID, userSession.Id)
+		ctx.ViewData("liked", liked)
+	}
+	
+	ctx.ViewData("nrLIkes", len(user.Businesses[0].Likes))
 	ctx.ViewData("business", user)
 	ctx.View("business_profile/index.html")
 }
@@ -914,4 +930,110 @@ func BusinessProfileInternal(ctx context.Context) {
 	ctx.ViewData("business", user)
 	ctx.ViewData("results", results)
 	ctx.View("business_profile/internal.html")
+}
+
+func BusinessLike(ctx context.Context) {
+	liked := false
+	businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
+	session := db.Sessions.Start(ctx)
+	userSession := session.Get("user").(model.User)
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("users")
+	
+	flag := IsLike(businessID, userSession.Id)
+	
+	if flag == false {
+		if err := c.Update(bson.M{"businesses._id": businessID}, bson.M{"$addToSet": bson.M{"businesses.$.likes": userSession.Id}}); err != nil {
+		}
+		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$addToSet": bson.M{"liked": businessID}}); err != nil {
+		}
+		liked = true
+	} else {
+		if err := c.Update(bson.M{"businesses._id": businessID}, bson.M{"$pull": bson.M{"businesses.$.likes": userSession.Id}}); err != nil {
+		}
+		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$pull": bson.M{"liked": businessID}}); err != nil {
+		}
+	}
+	
+	_, user := model.GetBusinessByID(businessID)
+	
+
+	Db.Close()
+	ctx.JSON(map[string]interface{}{"success": liked, "count": len(user.Businesses[0].Likes)})
+}
+
+func IsLike(businessID bson.ObjectId, userID bson.ObjectId) bool {
+	flag := true
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("users")
+	
+	if err := c.Find(bson.M{"_id": userID, "liked": businessID}).One(nil); err != nil {
+		flag = false
+	}
+
+	Db.Close()
+	return flag;
+}
+
+func LIveSearch(ctx context.Context) {
+	searchStr := ctx.FormValue("keyword")
+	business := []model.User{}
+	session := db.Sessions.Start(ctx)
+	userSession := session.Get("user").(model.User)
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("users")
+	/*if err := c.Find(bson.M{"businesses": bson.M{ "$elemMatch": bson.M{"name":bson.M{"$regex": searchStr, "$options": "i"}}}}).Select(bson.M{"_id": 0, "businesses.$":1}).All(&business); err != nil {
+		panic(err)
+	}*/
+	
+	/*if err := c.Find(bson.M{"businesses.name":bson.M{"$regex": searchStr, "$options": "i"}}).Select(bson.M{"_id": 0, "businesses": bson.M{ "$elemMatch": bson.M{"name":bson.M{"$regex": searchStr, "$options": "i"}}}}).All(&business); err != nil {
+		panic(err)
+	}*/
+	
+	oe := bson.M{
+         "$match" : bson.M{"businesses.name": bson.M{"$regex": searchStr, "$options": "i"}, "businesses.likes": userSession.Id},
+	}
+	oc := bson.M{
+        "$unwind":"$businesses",
+	}
+	ob := bson.M{
+        "$group": bson.M{
+			"_id": "$_id",
+			"businesses": bson.M{"$push": "$businesses"},
+		},
+	}
+	oa := bson.M{
+        "$project" :bson.M {
+			"businesses.name":1,
+			"businesses.pro":1,
+			"pro": "$businesses.pro",
+			"check": "$businesses.check",
+		},
+	}
+	
+	os := bson.M{
+        "$sort" :bson.M {
+			"pro":-1,
+			"check":-1,
+		},
+	}
+
+	pipe := c.Pipe([]bson.M{oe, oc, oe, os, ob, oa})
+	
+	if err := pipe.All(&business); err != nil {	
+		log.Printf(err.Error())
+	}
+	pretty.Println(business)
+	Db.Close()
+	
+	searchResults := []LiveResults{}
+	for _, item := range business {
+		for _, subItem := range item.Businesses {
+			searchResults = append(searchResults, LiveResults{subItem.Name, subItem.Profile})
+		}
+    }
+	ctx.JSON(map[string]interface{}{"results": searchResults})
 }

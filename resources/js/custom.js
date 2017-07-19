@@ -147,6 +147,67 @@ $(document).ready(function() {
 		});
 	});
 	
+	var likeFlag = false;
+	$(".businessLikeBtn").on("click", function(e) {
+		e.preventDefault();
+		if(!likeFlag) {
+			var thisbtn = $(this);
+			likeFlag = true;
+			var nrLikes = parseInt($(".nrLikes").text());
+			var likesBefore = nrLikes;
+			if(liked) {
+				--nrLikes;
+				thisbtn.removeClass("liked");
+			} else {
+				++nrLikes;
+				thisbtn.addClass("liked");
+			}
+			$(".nrLikes").html(nrLikes);
+			
+			e.preventDefault();
+			var actionType = $(this).data("action");
+			var businessID = $("#businessID").val();
+			$.post( "/likes/"+businessID,
+				function( data ) {
+					if(data.success === true) {
+						liked = true;
+						thisbtn.addClass("liked");
+					} else {
+						liked = false;
+						thisbtn.removeClass("liked");
+					}
+					$(".nrLikes").html(data.count);
+					likeFlag = false;
+			}, "json")
+			.fail(function (jqXHR, exception) {
+					var msg = '';
+					if (jqXHR.status === 0) {
+						msg = 'Not connect.\n Verify Network.';
+					} else if (jqXHR.status == 404) {
+						msg = 'Requested page not found. [404]';
+					} else if (jqXHR.status == 500) {
+						msg = 'Internal Server Error [500].';
+					} else if (exception === 'parsererror') {
+						msg = 'Requested JSON parse failed.';
+					} else if (exception === 'timeout') {
+						msg = 'Time out error.';
+					} else if (exception === 'abort') {0
+						msg = 'Ajax request aborted.';
+					} else {
+						msg = 'Uncaught Error.\n' + jqXHR.responseText;
+					}
+					$(".nrLikes").html(likesBefore);
+					if(liked) {
+						thisbtn.addClass("liked");
+					} else {
+						thisbtn.removeClass("liked");
+					}
+					likeFlag = false;
+					console.log(msg);
+			});
+		}
+	});
+	
 	if($("#businessDescription").length > 0) {
 		tinymce.init({
 			selector: '#businessDescription',
@@ -177,6 +238,35 @@ $(document).ready(function() {
 			}
 		});
 	}
+	
+	var headSearch = $(".headSearch");
+	headSearch.keyup(function() {
+		var str = headSearch.val();
+		console.log(str);
+		$.post( "/livesearch", {"keyword":str},
+		function( data ) {
+			console.log(data.results);
+		}, "json")
+		.fail(function (jqXHR, exception) {
+			var msg = '';
+			if (jqXHR.status === 0) {
+				msg = 'Not connect.\n Verify Network.';
+			} else if (jqXHR.status == 404) {
+				msg = 'Requested page not found. [404]';
+			} else if (jqXHR.status == 500) {
+				msg = 'Internal Server Error [500].';
+			} else if (exception === 'parsererror') {
+				msg = 'Requested JSON parse failed.';
+			} else if (exception === 'timeout') {
+				msg = 'Time out error.';
+			} else if (exception === 'abort') {0
+				msg = 'Ajax request aborted.';
+			} else {
+				msg = 'Uncaught Error.\n' + jqXHR.responseText;
+			}
+			console.log(msg);
+		});
+	});
 });
 
 

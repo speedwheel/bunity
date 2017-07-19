@@ -33,6 +33,9 @@ func Routes(app *iris.Application) {
 	app.Post("/forgot_password", controller.ForgotPassword)
 	app.Get("/logout", general.Logout)
 	
+	app.Post("/likes/{businessID:string}", controller.BusinessLike)
+	
+	app.Post("/livesearch", controller.LIveSearch)
 	
 	//users edit
 	users := app.Party("/users", model.IsAuthRedirect)
@@ -61,6 +64,7 @@ func Routes(app *iris.Application) {
 	businesses.Post("/deletefile", controller.DeleteFile)
 	businesses.Post("/sendsms", controller.SendSms)
 	businesses.Post("/verifycode", controller.VerifyCode)
+	
 	
 	businesses.Post("/updatephotos", controller.UpdatePhotos)
 }
