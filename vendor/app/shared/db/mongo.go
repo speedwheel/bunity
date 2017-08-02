@@ -39,10 +39,10 @@ func (this *MgoDb) Init() *mgo.Session {
 	this.Session = mainSession.Copy()
 	this.Db = this.Session.DB(cfg.DB.Mongo.Database)
 	
-	index := mgo.Index{
-		Key: []string{"$text:businesses.name"},
+	/*searchAuth := mgo.Index{
+		Key: []string{"slug", "like", "pro", "check"},
 	  }
-	this.C("users").EnsureIndex(index)
+	this.C("businesses").EnsureIndex(searchAuth)*/
 	
 	return this.Session
 }

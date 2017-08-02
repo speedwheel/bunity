@@ -18,6 +18,9 @@ body {
 	border-top-left-radius:3px;
 	border-bottom-left-radius:3px;
 }
+#search_input:focus {
+	outline:0;
+}
 #search {
 	height:36px;
 	width:54px;
@@ -32,7 +35,39 @@ body {
 .search-container {
 	height:36px;
 	margin-top:18px;
-	padding-right:40px
+	margin-right:40px;
+	position:relative;
+}
+.searchResults {
+	position:absolute;
+	background:#fff;
+	width:100%;
+	display:none;
+	border: 1px solid #ccc;
+    border-color: rgba(0, 0, 0, .15);
+    border-radius: 2px;
+    box-shadow: 0 4px 6px 2px rgba(0, 0, 0, .10);
+	top:37px;
+	z-index:1;
+}
+.searchResults ul {
+	padding: 0 7px;
+}
+.searchResults li {
+	margin: 7px 8px;
+}
+.searchResults ul a {
+	color: #1d2129;
+	display:block;
+	font-size: 14px;
+}
+.searchLoad {
+	line-height: 23px;
+    padding: 8px 0;
+    border-top: 1px solid #e1e1e1;
+    text-align: center;
+    font-size: 11px;
+    font-weight: bold;
 }
 .logo-container {
 	padding-top: 11px;
@@ -493,7 +528,7 @@ vertical-align:top;
 .galleryContainer .galleryImageSIngle {
 	border-bottom: 1px solid #fff;
 }
-.galleryContainer img, .profile-picture img {
+.galleryContainer img, .profile-picture img, .bProfilePic img {
  position: absolute;
   left: 50%;
   top: 50%;
@@ -514,7 +549,15 @@ vertical-align:top;
 	position:relative;
 	overflow:hidden;
 }
-
+.bProfilePic {
+	width:72px;
+	height:72px;
+	float:left;
+	position:relative;
+	margin-right: 8px;
+	overflow:hidden;
+	overflow:hidden;
+}
 .portrait img {
   width: 100%;
   height: auto;
@@ -546,4 +589,8 @@ vertical-align:top;
 }
 .businessLikeBtn.liked {
 	color:#4673cc!important;
+}
+.bizFindResults li {
+	padding:12px 0;
+	border-bottom: 1px solid #e3e6e9;
 }

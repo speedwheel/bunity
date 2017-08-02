@@ -27,6 +27,7 @@ import(
 	"math"
 	//"github.com/patrickmn/go-cache"
 	"github.com/kr/pretty"
+	"strings"
 
 )
 
@@ -38,6 +39,7 @@ type FormError struct {
 type LiveResults struct {
 	Name string
 	Image[] string
+	Url string
 }
 
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -116,7 +118,8 @@ func PaymentMethods(ctx context.Context) {
 func BusinessList(ctx context.Context) {
 	session := db.Sessions.Start(ctx)
 	userSession := session.Get("user").(model.User)
-	ctx.ViewData("business", userSession.Businesses)
+	business := model.GetAllBusinessByUser(userSession.Id)
+	ctx.ViewData("business", business)
 	ctx.View("businesses.html")	
 }
 
@@ -131,6 +134,7 @@ func BusinessAddStep1(ctx context.Context) {
 	} else if businessSession != nil {
 		business = session.Get("businessForm").(model.Business)
 	}
+	
 	ctx.ViewData("business", business)
 	ctx.ViewData("countries", countries)
 	ctx.ViewData("statesUSA", statesUSA)
@@ -151,6 +155,7 @@ func BusinessAddStep11(ctx context.Context) {
 	} else if businessSession != nil {
 		business = session.Get("businessForm").(model.Business)
 	}
+	fmt.Println(business)
 	ctx.ViewData("business", business)
 	ctx.ViewData("countries", countries)
 	ctx.ViewData("statesUSA", statesUSA)
@@ -300,17 +305,10 @@ func BusinessAddStep5(ctx context.Context) {
     for _, f := range files {
             imageSlice = append(imageSlice, f.Name())
     }*/
-	images := model.User{}
-	Db := db.MgoDb{}
-	Db.Init()
-	c := Db.C("users")
-	if err := c.Find(bson.M{"_id": userSession.Id, "businesses._id": bson.ObjectIdHex(ctx.Params().Get("businessID"))}).Select(bson.M{"_id": 0, "businesses.$":1}).One(&images); err != nil {
-		panic(err)
-	}
-	galleryImages := images.Businesses[0].Gallery
-	profileImages := images.Businesses[0].Profile
-	coverImages := images.Businesses[0].Cover
-	Db.Close()
+	images := model.GetBusinessByIDandUser( bson.ObjectIdHex(ctx.Params().Get("businessID")), userSession.Id)
+	galleryImages := images.Gallery
+	profileImages := images.Profile
+	coverImages := images.Cover
 	ctx.ViewData("businessID", bson.ObjectIdHex(ctx.Params().Get("businessID")).Hex())
 	ctx.ViewData("userID", userSession.Id.Hex())
 	ctx.ViewData("galleryImages", galleryImages)
@@ -359,19 +357,23 @@ func BusinessDelete(ctx context.Context) {
 		businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
 		Db := db.MgoDb{}
 		Db.Init()
-		c := Db.C("users")
+		c := Db.C("businesses")
 		
-		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$pull": bson.M{"businesses": bson.M{"_id":businessID}}}); err != nil {
-			panic(err)
+		if err := c.Remove(bson.M{"_id": businessID, "user_id": userSession.Id}); err != nil {
+			log.Printf(err.Error())
+		}
+		c = Db.C("users")
+		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$pull": bson.M{"businesses":businessID}}); err != nil {
+			log.Printf(err.Error())
 		}
 		if err := c.Find(bson.M{"_id": userSession.Id}).One(&userSession); err != nil {
-			panic(err)
+			log.Printf(err.Error())
 		}
 		
 	}
 	session.Set("user", userSession)
-	
-	ctx.ViewData("business", userSession.Businesses)
+	business := model.GetAllBusinessByUser(userSession.Id)
+	ctx.ViewData("business", business)
 	
 	ctx.View("businesses.html")	
 }
@@ -395,63 +397,64 @@ func BusinessEventsTracker(ctx context.Context) {
 		setValues := bson.M{}
 		if ctx.FormValue("step") == "1" {
 			business.Website = ctx.FormValue("business[website]")
-			setValues["businesses.$.website"] = business.Website
+			setValues["website"] = business.Website
 			
 			business.Name = ctx.FormValue("business[name]") 
 			if business.Name == "" {
 				formError = append(formError, FormError{"businessName", "This field is required"})
 			} else {
-				setValues["businesses.$.name"] = business.Name
+				setValues["name"] = business.Name
+				setValues["slug"] = strings.ToLower(business.Name)
 			}
 			business.Phone = ctx.FormValue("business[phone]")
 			if business.Phone == "" {
 				formError = append(formError, FormError{"businessPhone", "This field is required"})
 			} else {
-				setValues["businesses.$.phone"] = business.Phone
+				setValues["phone"] = business.Phone
 			}
 			business.Address = ctx.FormValue("business[address]")
 			if business.Address == "" {
 				formError = append(formError, FormError{"businessAddress", "This field is required"})
 			} else {
-				setValues["businesses.$.address"] = business.Address
+				setValues["address"] = business.Address
 				mapAddress += business.Address+","
 			}
 			
 			business.Address2 = ctx.FormValue("business[address2]")
-			setValues["businesses.$.address2"] = business.Address2
+			setValues["address2"] = business.Address2
 			
 			business.Area = ctx.FormValue("business[area]")
 			if business.Area == "" {
 				formError = append(formError, FormError{"businessArea", "This field is required"})
 			} else {
-				setValues["businesses.$.area"] = business.Area
+				setValues["area"] = business.Area
 				mapAddress += business.Area+","
 			}
 			business.State = ctx.FormValue("business[state]")
 			if business.State == "" {
 				formError = append(formError, FormError{"businessStateControl", "This field is required"})
 			} else {
-				setValues["businesses.$.state"] = business.State
+				setValues["state"] = business.State
 			}
 			business.City = ctx.FormValue("business[city]")
 			if business.City == "" {
 				formError = append(formError, FormError{"businessCity", "This field is required"})
 			} else {
-				setValues["businesses.$.city"] = business.City
+				setValues["city"] = business.City
 				mapAddress += business.City+","
 			}
 			business.PostalCode = ctx.FormValue("business[postal_code]")
 			if business.PostalCode == "" {
 				formError = append(formError, FormError{"businessPostalCode", "This field is required"})
 			} else {
-				setValues["businesses.$.postalcode"] = business.PostalCode
+				setValues["postalcode"] = business.PostalCode
 				mapAddress += business.PostalCode+","
 			}
 			business.Country = ctx.FormValue("business[country]")
 			if business.Country == "" {
 				formError = append(formError, FormError{"businessCountry", "This field is required"})
 			} else {
-				setValues["businesses.$.country"] = business.Country
+				setValues["country"] = business.Country
 				mapAddress += business.Country
 				
 			}
@@ -459,8 +462,8 @@ func BusinessEventsTracker(ctx context.Context) {
 			if mapAddress != "" {
 				coor := general.MapsInit(mapAddress)
 				if (coor) != nil {
-					setValues["businesses.$.map.lat"] = coor[0].Geometry.Location.Lat
-					setValues["businesses.$.map.lng"] = coor[0].Geometry.Location.Lng
+					setValues["map.lat"] = coor[0].Geometry.Location.Lat
+					setValues["map.lng"] = coor[0].Geometry.Location.Lng
 				}
 			}
 		}
@@ -469,97 +472,78 @@ func BusinessEventsTracker(ctx context.Context) {
 			if business.Industry == "" {
 				formError = append(formError, FormError{"businessIndustry", "This field is required"})
 			} else {
-				setValues["businesses.$.industry"] = business.Industry
+				setValues["industry"] = business.Industry
 			}
 			business.YearsBusiness = ctx.FormValue("business[yearsBusiness]")
 			if business.YearsBusiness == "" {
 				formError = append(formError, FormError{"businessYearsBusiness", "This field is required"})
 			} else {
-				setValues["businesses.$.yearsBusiness"] = business.YearsBusiness
+				setValues["yearsBusiness"] = business.YearsBusiness
 			}
 			business.NumberEmployees = ctx.FormValue("business[numberEmployees]")
 			if business.NumberEmployees == "" {
 				formError = append(formError, FormError{"businessNumberEmployees", "This field is required"})
 			} else {
-				setValues["businesses.$.numberEmployees"] = business.NumberEmployees
+				setValues["numberEmployees"] = business.NumberEmployees
 			}
 			business.SizeBusiness = ctx.FormValue("business[sizeBusiness]")
 			if business.SizeBusiness == "" {
 				formError = append(formError, FormError{"businessSizeBusiness", "This field is required"})
 			} else {
-				setValues["businesses.$.sizeBusiness"] = business.SizeBusiness
+				setValues["sizeBusiness"] = business.SizeBusiness
 			}
 			business.RelationshipBusiness = ctx.FormValue("business[relationshipBusiness]")
 			if business.RelationshipBusiness == "" {
 				formError = append(formError, FormError{"businessRelationshipBusiness", "This field is required"})
 			} else {
-				setValues["businesses.$.relationshipBusiness"] = business.RelationshipBusiness
+				setValues["relationshipBusiness"] = business.RelationshipBusiness
 			}
 			business.HowYourHear = ctx.FormValue("business[howYourHear]")
 			if business.HowYourHear == "" {
 				formError = append(formError, FormError{"businessHowYourHear", "This field is required"})
 			} else {
-				setValues["businesses.$.howYouHear"] = business.HowYourHear
+				setValues["howYouHear"] = business.HowYourHear
 			}
 			
 			
 		}
 		
-		if ctx.FormValue("step") == "3" {
-			business.Description = template.HTML(ctx.FormValue("business[description]"))
-			
-			if business.Description == "" {
-				formError = append(formError, FormError{"businessDescription", "This field is required"})
-			}
-			
-			fmt.Println(business.Description)
-			Db := db.MgoDb{}
-			Db.Init()
-			c := Db.C("users")
-			userSession := session.Get("user").(model.User)
-
-			if err := c.Update(bson.M{"_id": userSession.Id, "businesses": bson.M{ "$elemMatch": bson.M{"_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}}}, bson.M{"$set": bson.M{"businesses.$.description": &business.Description}}); err != nil {
-				log.Printf(err.Error())
-			}
-
-			user := model.User{}
-			if err := c.Find(bson.M{"_id": userSession.Id}).One(&user); err != nil {
-				panic(err)
-			}
-			Db.Close()
-			session.Set("user", user)
-		}
 		
 		if ctx.FormValue("step") == "4" {
-			setValues["businesses.$.social.facebook"] = ctx.FormValue("business[facebook]")
-			setValues["businesses.$.social.google"] = ctx.FormValue("business[google]")
-			setValues["businesses.$.social.instagram"] = ctx.FormValue("business[instagram]")
-			setValues["businesses.$.social.youtube"] = ctx.FormValue("business[youtube]")
-			setValues["businesses.$.social.pinterest"] = ctx.FormValue("business[pinterest]")
-			setValues["businesses.$.social.linkedin"] = ctx.FormValue("business[linkedin]")
-			setValues["businesses.$.social.twitter"] = ctx.FormValue("business[twitter]")
+			setValues["social.facebook"] = ctx.FormValue("business[facebook]")
+			setValues["social.google"] = ctx.FormValue("business[google]")
+			setValues["social.instagram"] = ctx.FormValue("business[instagram]")
+			setValues["social.youtube"] = ctx.FormValue("business[youtube]")
+			setValues["social.pinterest"] = ctx.FormValue("business[pinterest]")
+			setValues["social.linkedin"] = ctx.FormValue("business[linkedin]")
+			setValues["social.twitter"] = ctx.FormValue("business[twitter]")
 		}
 		
 		
 		if(ctx.FormValue("businessID") != "") {
 			Db := db.MgoDb{}
 			Db.Init()
-			c := Db.C("users")
+			c := Db.C("businesses")
 			userSession := session.Get("user").(model.User)
 			
 			if ctx.FormValue("step") == "1" || ctx.FormValue("step") == "2" || ctx.FormValue("step") == "4" {
-				if err := c.Update(bson.M{"_id": userSession.Id, "businesses": bson.M{ "$elemMatch": bson.M{"_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}}}, bson.M{"$set": setValues}); err != nil {
+				if err := c.Update(bson.M{"user_id": userSession.Id, "_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}, bson.M{"$set": setValues}); err != nil {
 					log.Printf(err.Error())
 				}
 			}
 			
 			if ctx.FormValue("step") == "3" {
-				if err := c.Update(bson.M{"_id": userSession.Id, "businesses": bson.M{ "$elemMatch": bson.M{"_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}}}, bson.M{"$set": bson.M{"businesses.$.description": business.Description}}); err != nil {
+				business.Description = template.HTML(ctx.FormValue("business[description]"))
+				if business.Description == "" {
+					formError = append(formError, FormError{"businessDescription", "This field is required"})
+				}
+				if err := c.Update(bson.M{"user_id": userSession.Id, "_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}, bson.M{"$set": bson.M{"description": business.Description}}); err != nil {
 					log.Printf(err.Error())
 				}
 			}
 
 			
+			c = Db.C("users")
 			user := model.User{}
 			if err := c.Find(bson.M{"_id": userSession.Id}).One(&user); err != nil {
 				panic(err)
@@ -599,14 +583,20 @@ func BusinessAddFinish(ctx context.Context) {
 		userSession := session.Get("user").(model.User)
 		Db := db.MgoDb{}
 		Db.Init()
-		c := Db.C("users")
+		c := Db.C("businesses")
 		
 		business = businessSession.(model.Business)
 		business.Id = bson.NewObjectId()
+		business.UserId = userSession.Id
 		business.Description = template.HTML(ctx.FormValue("business[description]"))
 		business.Verified = 0
 		business.Premium = 0
-		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$push": bson.M{"businesses": &business}}); err != nil {
+		business.Slug = strings.ToLower(business.Name)
+		if err := c.Insert(&business); err != nil {
+			panic(err)
+		}
+		c = Db.C("users")
+		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$push": bson.M{"businesses": business.Id}}); err != nil {
 			panic(err)
 		}
 		Db.Close()
@@ -695,8 +685,8 @@ func UploadFiles(ctx context.Context) {
 	
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C("users")
-	if err := c.Update(bson.M{"_id": userSession.Id, "businesses": bson.M{ "$elemMatch": bson.M{"_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}}}, bson.M{"$push": bson.M{"businesses.$."+folder: fname}}); err != nil {
+	c := Db.C("businesses")
+	if err := c.Update(bson.M{"_id": bson.ObjectIdHex(ctx.FormValue("businessID")), "user_id": userSession.Id}, bson.M{"$push": bson.M{folder: fname}}); err != nil {
 		panic(err)
 	}
 	Db.Close()
@@ -715,8 +705,9 @@ func DeleteFile(ctx context.Context) {
 	userSession := session.Get("user").(model.User)
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C("users")
-	if err := c.Update(bson.M{"_id": userSession.Id, "businesses": bson.M{ "$elemMatch": bson.M{"_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}}}, bson.M{"$pull": bson.M{"businesses.$."+folder: ctx.FormValue("id")}}); err != nil {
+	c := Db.C("businesses")
+	if err := c.Update(bson.M{"_id": bson.ObjectIdHex(ctx.FormValue("businessID")), "user_id": userSession.Id}, bson.M{"$pull": bson.M{folder: ctx.FormValue("id")}}); err != nil {
+		log.Printf(err.Error())
 		return
 	}
 	var path = config.GetAppPath()+"resources/uploads/"+userSession.Id.Hex()+"/"+ctx.FormValue("businessID")+"/"+folder+"/"+ctx.FormValue("id")
@@ -747,8 +738,8 @@ func SendSms(ctx context.Context) {
 		fmt.Println(business.SmsCode)
 		Db := db.MgoDb{}
 		Db.Init()
-		c := Db.C("users")
-		if err := c.Update(bson.M{"_id": userSession.Id, "businesses": bson.M{ "$elemMatch": bson.M{"_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}}}, bson.M{"$set": bson.M{"businesses.$.smsCode": business.SmsCode}}); err != nil {
+		c := Db.C("businesses")
+		if err := c.Update(bson.M{"_id": bson.ObjectIdHex(ctx.FormValue("businessID")), "user_id": userSession.Id}, bson.M{"$set": bson.M{"smsCode": business.SmsCode}}); err != nil {
 			log.Printf(err.Error())
 		}
 		Db.Close()
@@ -773,17 +764,20 @@ func VerifyCode(ctx context.Context) {
 	userSession := session.Get("user").(model.User)
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C("users")
-	if err := c.Find(bson.M{"_id": userSession.Id, "businesses._id": bson.ObjectIdHex(ctx.FormValue("businessID")), "businesses.smsCode": verificationCode}).Select(bson.M{"_id": 0, "businesses.$":1}).One(&business); err != nil {
+	c := Db.C("businesses")
+	if err := c.Find(bson.M{"_id": bson.ObjectIdHex(ctx.FormValue("businessID")), "user_id": userSession.Id , "smsCode": verificationCode}).One(&business); err != nil {
 		ctx.JSON(map[string]interface{}{"response": false, "message": "Invalid Verification Code"})
 		return
+	}
+	if err := c.Update(bson.M{"_id": bson.ObjectIdHex(ctx.FormValue("businessID")), "user_id": userSession.Id}, bson.M{"$set": bson.M{"check":1}}); err != nil {
+		log.Printf(err.Error())
 	}
 	ctx.JSON(map[string]bool{"response": true})
 	return
 }
 
 func BusinessProfilePage(ctx context.Context) {
-	user := model.User{}
+	user := model.Business{}
 	var err error
 	if !bson.IsObjectIdHex(ctx.Params().Get("businessID")){
 		ctx.NotFound()
@@ -804,24 +798,23 @@ func BusinessProfilePage(ctx context.Context) {
 		ctx.ViewData("liked", liked)
 	}
 	
-	ctx.ViewData("nrLIkes", len(user.Businesses[0].Likes))
+	ctx.ViewData("nrLIkes", len(user.Likes))
 	ctx.ViewData("business", user)
 	ctx.View("business_profile/index.html")
 }
 
 func UpdatePhotos(ctx context.Context) {
-	fmt.Println("da")
-	images := model.User{}
+	images := model.Business{}
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C("users")
-	if err := c.Find(bson.M{"_id": bson.ObjectIdHex(ctx.FormValue("userID")), "businesses._id": bson.ObjectIdHex(ctx.FormValue("businessID"))}).Select(bson.M{"_id": 0, "businesses.$":1}).One(&images); err != nil {
+	c := Db.C("businesses")
+	if err := c.Find(bson.M{"user_id": bson.ObjectIdHex(ctx.FormValue("userID")), "_id": bson.ObjectIdHex(ctx.FormValue("businessID"))}).One(&images); err != nil {
 		panic(err)
 	}
 	Db.Close()
-	galleryImages := images.Businesses[0].Gallery
-	profileImages := images.Businesses[0].Profile
-	coverImages := images.Businesses[0].Cover
+	galleryImages := images.Gallery
+	profileImages := images.Profile
+	coverImages := images.Cover
 	
 	Db.Close()
 	//ctx.ViewData("businessID", bson.ObjectIdHex(ctx.Params().Get("businessID")).Hex())
@@ -831,7 +824,7 @@ func UpdatePhotos(ctx context.Context) {
 
 func BusinessProfileMaps(ctx context.Context) {
 	//c := cache.New(5*time.Minute, 10*time.Minute)
-	user := model.User{}
+	user := model.Business{}
 	var err error
 	if !bson.IsObjectIdHex(ctx.Params().Get("businessID")){
 		ctx.NotFound()
@@ -849,7 +842,7 @@ func BusinessProfileMaps(ctx context.Context) {
 }
 
 func BusinessProfileWeb(ctx context.Context) {
-	user := model.User{}
+	user := model.Business{}
 	var err error
 	if !bson.IsObjectIdHex(ctx.Params().Get("businessID")){
 		ctx.NotFound()
@@ -871,7 +864,7 @@ func BusinessProfileWeb(ctx context.Context) {
 	}
 	start := (page - 1) * 10 + 1
 
-	results, count := general.Run(start, "005405349541100282636:amgvfhrjtka", user.Businesses[0].Name)
+	results, count := general.Run(start, "005405349541100282636:amgvfhrjtka", user.Name)
 	resultsPage := float64(10)
 	countF := float64(count)
 	pages := math.Ceil(countF / resultsPage)
@@ -892,7 +885,7 @@ func BusinessProfileWeb(ctx context.Context) {
 }
 
 func BusinessProfileInternal(ctx context.Context) {
-	user := model.User{}
+	user := model.Business{}
 	var err error
 	if !bson.IsObjectIdHex(ctx.Params().Get("businessID")){
 		ctx.NotFound()
@@ -913,7 +906,7 @@ func BusinessProfileInternal(ctx context.Context) {
 		page = 1
 	}
 	start := (page - 1) * 10 + 1
-	results, count := general.Run(start, "005405349541100282636:zequohzqzru", user.Businesses[0].Name)
+	results, count := general.Run(start, "005405349541100282636:zequohzqzru", user.Name)
 	resultsPage := float64(10)
 	countF := float64(count)
 	pages := math.Ceil(countF / resultsPage)
@@ -939,19 +932,21 @@ func BusinessLike(ctx context.Context) {
 	userSession := session.Get("user").(model.User)
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C("users")
+	c := Db.C("businesses")
 	
 	flag := IsLike(businessID, userSession.Id)
 	
 	if flag == false {
-		if err := c.Update(bson.M{"businesses._id": businessID}, bson.M{"$addToSet": bson.M{"businesses.$.likes": userSession.Id}}); err != nil {
+		if err := c.Update(bson.M{"_id": businessID}, bson.M{"$addToSet": bson.M{"likes": userSession.Id}}); err != nil {
 		}
+		c := Db.C("users")
 		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$addToSet": bson.M{"liked": businessID}}); err != nil {
 		}
 		liked = true
 	} else {
-		if err := c.Update(bson.M{"businesses._id": businessID}, bson.M{"$pull": bson.M{"businesses.$.likes": userSession.Id}}); err != nil {
+		if err := c.Update(bson.M{"_id": businessID}, bson.M{"$pull": bson.M{"likes": userSession.Id}}); err != nil {
 		}
+		c := Db.C("users")
 		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$pull": bson.M{"liked": businessID}}); err != nil {
 		}
 	}
@@ -960,7 +955,7 @@ func BusinessLike(ctx context.Context) {
 	
 
 	Db.Close()
-	ctx.JSON(map[string]interface{}{"success": liked, "count": len(user.Businesses[0].Likes)})
+	ctx.JSON(map[string]interface{}{"success": liked, "count": len(user.Likes)})
 }
 
 func IsLike(businessID bson.ObjectId, userID bson.ObjectId) bool {
@@ -977,63 +972,269 @@ func IsLike(businessID bson.ObjectId, userID bson.ObjectId) bool {
 	return flag;
 }
 
-func LIveSearch(ctx context.Context) {
-	searchStr := ctx.FormValue("keyword")
-	business := []model.User{}
-	session := db.Sessions.Start(ctx)
-	userSession := session.Get("user").(model.User)
+func LiveSearch(ctx context.Context) {
+	query := bson.M{}
+	searchStr := strings.ToLower(ctx.FormValue("keyword"))
+	query["slug"] = bson.M{"$regex": searchStr}
+	business := []model.Business{}
+	business2 := []model.Business{}
+	
+	auth := ctx.Values().Get("auth").(bool)
+	if auth  {
+		session := db.Sessions.Start(ctx)
+		userSession := session.Get("user").(model.User)
+		query["likes"] = userSession.Id
+	}
+	pageSize := 8
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C("users")
-	/*if err := c.Find(bson.M{"businesses": bson.M{ "$elemMatch": bson.M{"name":bson.M{"$regex": searchStr, "$options": "i"}}}}).Select(bson.M{"_id": 0, "businesses.$":1}).All(&business); err != nil {
+	c := Db.C("businesses")
+	
+	/*if err := c.Find(query).Limit(8).Select(bson.M{"slug":1, "profile":1}).Sort("-pro", "-check").All(&business); err != nil {
 		panic(err)
 	}*/
-	
-	/*if err := c.Find(bson.M{"businesses.name":bson.M{"$regex": searchStr, "$options": "i"}}).Select(bson.M{"_id": 0, "businesses": bson.M{ "$elemMatch": bson.M{"name":bson.M{"$regex": searchStr, "$options": "i"}}}}).All(&business); err != nil {
-		panic(err)
-	}*/
-	
 	oe := bson.M{
-         "$match" : bson.M{"businesses.name": bson.M{"$regex": searchStr, "$options": "i"}, "businesses.likes": userSession.Id},
-	}
-	oc := bson.M{
-        "$unwind":"$businesses",
-	}
-	ob := bson.M{
-        "$group": bson.M{
-			"_id": "$_id",
-			"businesses": bson.M{"$push": "$businesses"},
-		},
+        "$match" :query,
 	}
 	oa := bson.M{
-        "$project" :bson.M {
-			"businesses.name":1,
-			"businesses.pro":1,
-			"pro": "$businesses.pro",
-			"check": "$businesses.check",
-		},
+        "$project": bson.M {"slug": 1, "profile": 1, "check":1, "pro":1},
 	}
-	
-	os := bson.M{
-        "$sort" :bson.M {
-			"pro":-1,
-			"check":-1,
-		},
+	ol := bson.M{
+        "$limit" :pageSize,
 	}
-
-	pipe := c.Pipe([]bson.M{oe, oc, oe, os, ob, oa})
+	or := bson.M{
+		"$sort": bson.D{
+			bson.DocElem{Name: "pro", Value: -1},
+			bson.DocElem{Name: "check", Value: -1},
+			bson.DocElem{Name: "slug", Value: 1},
+		 },
+	}
+	pipe := c.Pipe([]bson.M{oe, oa, or, ol })
 	
 	if err := pipe.All(&business); err != nil {	
 		log.Printf(err.Error())
 	}
-	pretty.Println(business)
-	Db.Close()
-	
+	var excludeIds []bson.ObjectId	
 	searchResults := []LiveResults{}
 	for _, item := range business {
-		for _, subItem := range item.Businesses {
-			searchResults = append(searchResults, LiveResults{subItem.Name, subItem.Profile})
-		}
+		searchResults = append(searchResults, LiveResults{item.Slug, item.Profile, item.Id.Hex()})
+		excludeIds = append(excludeIds, item.Id)
     }
+
+	if auth  {
+		if len(searchResults) < 8 {
+			query2 := bson.M{}
+			query2["_id"]  = bson.M{"$nin": excludeIds}
+			query2["slug"] = bson.M{"$regex": searchStr}
+			/*if err := c.Find(bson.M{"_id": bson.M{"$nin": excludeIds}, "slug": bson.M{"$regex": searchStr}}).Limit(8).Select(bson.M{"slug":1, "profile":1}).Sort("-pro", "-check").All(&business2); err != nil {
+				panic(err)
+			}*/
+			oe := bson.M{
+				"$match" :query2,
+			}
+			pipe := c.Pipe([]bson.M{oe, oa, or, ol })
+			if err := pipe.All(&business2); err != nil {	
+				log.Printf(err.Error())
+			}
+			for _, item := range business2 {
+				if len(searchResults) < 8 {
+					searchResults = append(searchResults, LiveResults{item.Slug, item.Profile, item.Id.Hex()})
+				}
+			}
+		}
+	}
+	Db.Close()
+	
+	
 	ctx.JSON(map[string]interface{}{"results": searchResults})
+}
+
+func BusinessSearch(ctx context.Context) {
+	var pageNum int
+	var err error
+	query := bson.M{}
+	searchStr := strings.ToLower(ctx.FormValue("q"))
+	businessCategory := ctx.FormValue("business_category")
+	query["slug"] = bson.M{"$regex": searchStr}
+	if(businessCategory != "") {
+		query["industry"] = businessCategory
+	}
+	verified := ctx.FormValue("verified")
+	if verified == "1" {
+		query["check"] = 1
+	}
+	//query["$text"] = bson.M{"$search": searchStr}
+	var business []bson.M
+	var business2 []bson.M
+	var businessExclude []bson.M
+	auth := ctx.Values().Get("auth").(bool)
+	if auth  {
+		session := db.Sessions.Start(ctx)
+		userSession := session.Get("user").(model.User)
+		query["likes"] = userSession.Id
+	}
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("businesses")
+	
+	if(ctx.Method() == "GET") {
+		pageNum, err = ctx.Params().GetInt("pageCount")
+		if err != nil {
+			if pageNum == -1 { 
+				pageNum = 1
+			} else {
+				log.Printf(err.Error())
+				ctx.NotFound()
+				return
+			}
+		}
+	} else if(ctx.Method() == "POST") {
+		pageNum, err = strconv.Atoi(ctx.FormValue("countPage"))
+		if err != nil {
+			log.Printf(err.Error())
+		}
+	}
+	
+	pageSize := 3
+	skips := pageSize * (pageNum -1)
+	/*if err := c.Find(query).Skip(skips).Limit(pageSize).Select(bson.M{"name":1, "profile":1, "description":1, "user_id":1, "likes":1}).Sort("-pro", "-check").All(&business); err != nil {
+		panic(err)
+	}*/
+	oe := bson.M{
+        "$match" :query,
+	}
+	oa := bson.M{
+        "$project": bson.M {"pro": 1, "check": 1, "name":1, "profile":1, "description":1, "user_id":1, "likes":1, "nrLikes": bson.M{ "$size": "$likes" }, "city": 1, "country": 1, "industry": 1},
+	}
+	ol := bson.M{
+        "$limit" :pageSize,
+	}
+	os := bson.M{
+        "$skip" :skips,
+	}
+	or := bson.M{
+		"$sort": bson.D{
+			bson.DocElem{Name: "pro", Value: -1},
+			bson.DocElem{Name: "check", Value: -1},
+			bson.DocElem{Name: "slug", Value: 1},
+		 },
+	}
+
+	
+	pipe := c.Pipe([]bson.M{oe, or, oa, os, ol })
+	
+	pipe2 := c.Pipe([]bson.M{oe})
+	
+	if err := pipe.All(&business); err != nil {	
+		log.Printf(err.Error())
+	}
+	
+	pretty.Println(skips)
+	
+	
+	countTotal, err := c.Find(query).Count()
+	if err != nil {
+		panic(err)
+	}
+	var excludeIds []bson.ObjectId	
+	pages := math.Ceil(float64(countTotal) / float64(pageSize))
+	remaining := countTotal % pageSize
+    rest := 0
+	if remaining > 0 {
+		rest = pageSize - remaining
+	}
+	//fmt.Println(countTotal, pageSize, countTotal % pageSize)
+
+	if auth  {
+		if err := pipe2.All(&businessExclude); err != nil {	
+			log.Printf(err.Error())
+		}
+		for _, item := range businessExclude {
+			excludeIds = append(excludeIds, item["_id"].(bson.ObjectId))
+		}
+		query2 := bson.M{}
+		query2["slug"] = bson.M{"$regex": searchStr}
+		query2["_id"] = bson.M{"$nin": excludeIds}
+		if(businessCategory != "") {
+			query2["industry"] = businessCategory
+		}
+		if verified == "1" {
+			query2["check"] = 1
+		}
+		countTotal2, err := c.Find(query2).Count()
+		if err != nil {
+			panic(err)
+		}
+		
+		businessesCount := len(business)
+		
+		if businessesCount < pageSize {
+			bussiness2Needed := pageSize - businessesCount
+			remaining := pageSize
+		
+			if(pageNum == int(pages)) {
+				remaining = bussiness2Needed
+			}
+			
+			skips2 := 0
+			//fmt.Println(pageNum, pages)
+			if pageNum > int(pages) {
+				skipsB1 := pageSize * (pageNum -1 - int(pages))
+				
+				skips2 = skipsB1 + rest
+			}
+			if businessesCount == 0 && pageNum == 1 {
+				skips2 = 0
+			}
+			//if businessesCount == 0 && pageNum
+			
+			oe := bson.M{
+				"$match" :query2,
+			}
+			ol := bson.M{
+				"$limit" :remaining,
+			}
+			os := bson.M{
+				"$skip" :skips2,
+			}
+			pipe := c.Pipe([]bson.M{oe, or, oa, os, ol })
+			if err := pipe.All(&business2); err != nil {	
+				log.Printf(err.Error())
+			}
+			for _, item := range business2 {
+				business = append(business, item)
+			}
+			//fmt.Println(skips2, remaining, countTotal2)
+			
+		}
+		
+		countTotal3 := countTotal2 + countTotal
+		pages = math.Ceil(float64(countTotal3) / float64(pageSize))
+		
+
+	}
+	
+	var pagesSlice []int
+	for i := 1; i <= int(pages); i++ {
+		pagesSlice = append(pagesSlice, i)
+	}
+	
+	Db.Close()
+	
+	if(ctx.Method() == "GET") {
+		ctx.ViewData("searchStr", searchStr)
+		ctx.ViewData("business", business)
+		ctx.ViewData("pageNum", pagesSlice)
+		ctx.ViewData("industries", industry)
+		ctx.ViewData("industries", industry)
+		ctx.ViewData("businessCategory", businessCategory)
+		ctx.ViewData("verified", verified)
+		ctx.View("search.html")
+	} else if (ctx.Method() == "POST") {
+		fmt.Println(pages)
+		if(int(pageNum) > int(pages)) {
+			business = []bson.M{}
+		}		
+		ctx.JSON(map[string]interface{}{"businesses": business})
+	}
 }

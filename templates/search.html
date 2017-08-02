@@ -1,0 +1,56 @@
+<div class="container{{if .auth}} searchAjax{{end}}">
+	<div class="row">
+		<div class="col-md-3">
+		{{if .auth}}
+			<h3>Filter results</h3>
+			<h4>CATEGORY</h4>
+			<ul class="list-unstyled">
+				
+				<li><a href="/search/business?q={{$.searchStr}}"> Any Category</a></li>
+				{{range .industries}}
+				<li><a href="/search/business?q={{$.searchStr}}&business_category={{.}}"> {{.}}</a></li>
+				{{end}}
+			</ul>
+			<h4>VERIFIED</h4>
+			<a href="/search/business?q={{$.searchStr}}{{if $.businessCategory}}&business_category={{$.businessCategory}}{{end}}{{if $.verified}}{{else}}&verified=1{{end}}"> Verified</a>
+		{{end}}
+		</div>
+		<div class="col-md-9">
+			<ul class="list-unstyled bizFindResults">
+			{{if index .business}}
+			{{range .business}}
+				<li>
+					{{if index .profile}}
+					<a class="bProfilePic" href="/{{._id.Hex}}" class="{{getRatio (index .profile 0)}}">
+						<img width="72" height="72" src="/static/uploads/{{.user_id.Hex}}/{{._id.Hex}}/profile/{{index .profile 0}}">
+					</a>
+					{{end}}
+					<div class="">
+						<a href="/{{._id.Hex}}" class="{{if index .profile}}{{getRatio (index .profile 0)}}{{end}}">{{.name}}</a>
+						<p style="margin-bottom:0;">{{.industry}}</p>
+						<p style="margin-bottom:0;">{{.city}}, {{.country}}</p>
+						<p style="margin-bottom:0;">{{.nrLikes}} like this</p>
+					</div>
+				</li>
+			{{end}}
+			</ul>
+			
+			
+			<div class="webSearchNav">
+				<ul class="list-inline unstyled text-center">
+				{{range .pageNum}}
+					<li class="list-inline-item"><a href="/search/business{{if eq . 1}}{{else}}/{{.}}/{{end}}?q={{$.searchStr}}{{if $.businessCategory}}&business_category={{$.businessCategory}}{{end}}{{if $.verified}}&verified=1{{end}}">{{.}}</a>
+				{{end}}
+			
+				</ul>
+			</div>
+			{{end}}
+			
+			<input class="searchTerm" type="hidden" value="{{.searchStr}}" >
+			<input class="businessCategory" type="hidden" value="{{.businessCategory}}" >
+			<input class="verifiedField" type="hidden" value="{{.verified}}" >
+			
+		</div>
+	</div>
+</div>
+		

@@ -18,7 +18,7 @@ type (
 		Image string `json:"image" bson:"image"  form:"image" facebook:"url"`
 		Liked []bson.ObjectId `json:"liked" bson:"liked" form:"liked,omitempty" facebook:"-"`
 		Account Account
-		Businesses []Business
+		Businesses []bson.ObjectId `json:"businesses" bson:"businesses" form:"businesses,omitempty" facebook:"-"`
 		
 	}
 	
@@ -33,7 +33,9 @@ type (
 	
 	Business struct {
 		Id  bson.ObjectId `json:"id" bson:"_id"  form:"-" facebook:"-"`
+		UserId  bson.ObjectId `json:"user_id" bson:"user_id"  form:"-" facebook:"-"`
 		Name string `json:"name" bson:"name" form:"name,omitempty" facebook:"-"`
+		Slug string `json:"slug" bson:"slug" form:"slug,omitempty" facebook:"-"`
 		Phone string `json:"phone" bson:"phone" form:"phone,omitempty" facebook:"-"`
 		Address string `json:"address" bson:"address" form:"address,omitempty" facebook:"-"`
 		Address2 string `json:"address2" bson:"address2" form:"address2,omitempty" facebook:"-"`
@@ -111,10 +113,10 @@ func GetBusinessByIDandUser(businessID bson.ObjectId, userID bson.ObjectId) Busi
 	
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C("users")
-	business := User{}
+	c := Db.C("businesses")
+	business := Business{}
 	//if err := c.Find(bson.M{"_id": userID, "businesses": bson.M{ "$elemMatch": bson.M{"_id":businessID}}}).Select(bson.M{"_id":0, "businesses.$": 1}).One(&business); err != nil {
-	if err := c.Find(bson.M{"_id": userID, "businesses._id": businessID}).Select(bson.M{"_id": 0, "businesses.$":1}).One(&business); err != nil {	
+	if err := c.Find(bson.M{"user_id": userID, "_id": businessID}).One(&business); err != nil {	
 	/*oe := bson.M{
         "$match" :bson.M {"_id": userID, "businesses._id": businessID},
 	}
@@ -130,16 +132,30 @@ func GetBusinessByIDandUser(businessID bson.ObjectId, userID bson.ObjectId) Busi
 		log.Printf(err.Error())
 	}
 	Db.Close()
-	return business.Businesses[0]
+	return business
 }
 
-func GetBusinessByID(businessID bson.ObjectId) (error, User){
+func GetBusinessByID(businessID bson.ObjectId) (error, Business){
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C("users")
-	business := User{}
+	c := Db.C("businesses")
+	business := Business{}
 	
-	err := c.Find(bson.M{"businesses._id": businessID}).Select(bson.M{"businesses.$":1}).One(&business)
+	err := c.Find(bson.M{"_id": businessID}).One(&business)
 	Db.Close()
 	return err, business
+}
+
+func GetAllBusinessByUser(userID bson.ObjectId) []Business{
+	
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("businesses")
+	business := []Business{}
+	if err := c.Find(bson.M{"user_id": userID}).All(&business); err != nil {	
+
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return business
 }

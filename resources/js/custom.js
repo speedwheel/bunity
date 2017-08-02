@@ -1,7 +1,7 @@
 var btnContinue;
 $(document).ready(function() {
 	loadBusinessGallery();
-	
+	loadBusinessesAjax();
 	galleryUploadFunc();
 	$(".updateGallery").fancybox({
 		afterClose : function() {
@@ -239,13 +239,35 @@ $(document).ready(function() {
 		});
 	}
 	
+	$(document).click(function (e) {
+		var container = $(".headSearch");
+		if (!container.is(e.target))
+		{
+			$('.searchResults').hide();
+		}
+	});
+	
 	var headSearch = $(".headSearch");
-	headSearch.keyup(function() {
+	headSearch.on("keyup focus",function() {
 		var str = headSearch.val();
+		$(".searchResults").html('<ul class="list-unstyled"><li>'+str.toLowerCase()+'</li></ul><div class="searchLoad">FINDING RESULTS <img color="white" src="/static/images/LOOn0JtHNzb.gif" class="img" alt="" width="16" height="16"></div>');
+		
 		console.log(str);
 		$.post( "/livesearch", {"keyword":str},
 		function( data ) {
 			console.log(data.results);
+			if(data.results.length > 0) {
+				var html = '<ul class="list-unstyled">';
+				for(var i=0;i<data.results.length;i++) {
+					var strL = str.toLowerCase();
+					var n = data.results[i].Name.replace(strL/*new RegExp(strL, 'g')*/, "<strong>"+strL+"</strong>");
+					html += '<li class=""><a href="/'+data.results[i].Url+'">'+n+'</a></li>';
+				}
+				html += '</ul>';
+			} else {
+				$(".searchLoad").remove();
+			}
+			$(".searchResults").html(html).show();
 		}, "json")
 		.fail(function (jqXHR, exception) {
 			var msg = '';
@@ -700,6 +722,90 @@ function loadBusinessGallery() {
 		}
 	});
 }
+
+function insensitiveReplaceAll(original, find, replace) {
+  var str = "",
+    remainder = original,
+    lowFind = find.toLowerCase(),
+    idx;
+
+  while ((idx = remainder.toLowerCase().indexOf(lowFind)) !== -1) {
+    str += remainder.substr(0, idx) + replace;
+
+    remainder = remainder.substr(idx + find.length);
+  }
+
+  return str + remainder;
+}
+
+function stringPos(textStr) {
+	return 
+	extStr.charAt(textStr.length-5);
+}
+
+function loadBusinessesAjax() {
+	var countPage = 2;
+	if($(".searchAjax").length) {
+		var win = $(window);
+		// Each time the user scrolls
+		console.log($(document).height() - win.height());
+			console.log(win.scrollTop());
+		win.scroll(function() {
+			// End of the document reached?
+			console.log($(document).height() - win.height());
+			console.log(win.scrollTop());
+			if ($(document).height() - win.height() == win.scrollTop()) {
+				$('#loading').show();
+
+				$.post( "/search/business", {"q": $(".searchTerm").val(), "countPage": countPage, "business_category": $(".businessCategory").val(), "verified": $(".verifiedField").val()},
+				function( data ) {
+					var b = data.businesses;
+					if(b) {
+						var html = '';
+						for (var i=0; i < b.length; i++) {
+							html += `
+							<li>
+								<a class="bProfilePic" href="/`+b[i]._id.toString()+`" class="">
+									<img width="72" height="72" src="/static/uploads/`+b[i].user_id.toString()+`/`+b[i]._id.toString()+`/profile/`+b[i].profile[0]+`">
+								</a>
+								<div class="">
+									<a href="/`+b[i]._id.toString()+`" class="">`+b[i].name+`</a>
+									<p style="margin-bottom:0;">`+b[i].industry+`</p>
+									<p style="margin-bottom:0;">`+b[i].city+`, `+b[i].country+`</p>
+									<p style="margin-bottom:0;">`+b[i].nrLikes+` like this</p>
+								</div>
+							</li>`;
+						}
+						$(".bizFindResults").append(html);
+						countPage++;
+					}
+				
+				}, "json")
+				.fail(function (jqXHR, exception) {
+						var msg = '';
+						if (jqXHR.status === 0) {
+							msg = 'Not connect.\n Verify Network.';
+						} else if (jqXHR.status == 404) {
+							msg = 'Requested page not found. [404]';
+						} else if (jqXHR.status == 500) {
+							msg = 'Internal Server Error [500].';
+						} else if (exception === 'parsererror') {
+							msg = 'Requested JSON parse failed.';
+						} else if (exception === 'timeout') {
+							msg = 'Time out error.';
+						} else if (exception === 'abort') {0
+							msg = 'Ajax request aborted.';
+						} else {
+							msg = 'Uncaught Error.\n' + jqXHR.responseText;
+						}
+						console.log(msg);
+				});
+			}
+		});
+	}
+}
+
+
 
 
 

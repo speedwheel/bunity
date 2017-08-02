@@ -18,7 +18,7 @@ import(
 var (
 	usr *model.User
 	passwordResetToken = []byte("secret key")
-	auth bool
+	auth = false
 )
 
 

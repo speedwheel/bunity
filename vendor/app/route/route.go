@@ -35,7 +35,10 @@ func Routes(app *iris.Application) {
 	
 	app.Post("/likes/{businessID:string}", controller.BusinessLike)
 	
-	app.Post("/livesearch", controller.LIveSearch)
+	app.Post("/livesearch", controller.LiveSearch)
+	
+	app.Any("/search/business", controller.BusinessSearch)
+	app.Get("/search/business/{pageCount:int}", controller.BusinessSearch)
 	
 	//users edit
 	users := app.Party("/users", model.IsAuthRedirect)
