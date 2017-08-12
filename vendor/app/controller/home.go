@@ -18,6 +18,7 @@ func Home (ctx context.Context) {
 	  
 	 fmt.Println(message)*/
 	// fmt.Println(err)
+	//ctx.Gzip(true)
 	ctx.View("home.html")
 }
 

@@ -1,8 +1,17 @@
 var btnContinue;
 $(document).ready(function() {
+	Dropzone.prototype.defaultOptions.dictRemoveFile = "X";
+	//$.fn.select2.defaults.set("theme", "classic");
+	$('.businessCountry, .businessStateUsa, .businessStateCanada, .businessStateAustralia, .businessIndustry').select2();
+	
+	$('.phonePrefix').select2({
+		templateSelection: formatState,
+		width: 'element',
+	});
 	loadBusinessGallery();
 	loadBusinessesAjax();
 	galleryUploadFunc();
+	searchCartegoryList();
 	$(".updateGallery").fancybox({
 		afterClose : function() {
 			$('#galleryUpload, #profileUpload, #coverUpload').remove();
@@ -21,7 +30,7 @@ $(document).ready(function() {
 	$(".businessSendNumber").on("click", function(e) {
 		var hrefSMS = this.href;
 		e.preventDefault();
-		$.post( "/businesses/sendsms", {"smsCode":$(".phoneSMSField").val(), "businessID": $("#businessID").val()},
+		$.post( "/businesses/sendsms", {"prefix": $(".phonePrefix").val(), "smsCode":$(".phoneSMSField").val(), "businessID": $("#businessID").val()},
 			function( data ) {
 				if(data.constructor === Array && data.length > 0) {
 						$(".phoneSMSField").addClass('error-form').attr('data-original-title', data[0].Message)
@@ -118,11 +127,11 @@ $(document).ready(function() {
 					}
 				}
 				if(actionType == "gallery") {
-					$('#imageUploadContainer').append('<div id="galleryUpload" class="dropzone"></div>');
+					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Gallery Photos</div><div class="editPhotoSubTitle">Choose up to 8 photos you\'d like to feature.</div><div id="galleryUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox" style="clear:both;"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div>');
 				} else if(actionType == "profile") {
-					$('#imageUploadContainer').append('<div id="profileUpload" class="dropzone"></div>');
+					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Cover Photo</div><div class="editPhotoSubTitle">Choose 1 photo you\'d like to feature.</div><div id="profileUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div>');
 				} else if(actionType == "cover") {
-					$('#imageUploadContainer').append('<div id="coverUpload" class="dropzone"></div>');
+					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Profile Photo</div><div class="editPhotoSubTitle">Choose 1 photo you\'d like to feature.</div><div id="coverUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div>');
 				}
 				galleryUploadFunc();
 		}, "json")
@@ -261,7 +270,8 @@ $(document).ready(function() {
 				for(var i=0;i<data.results.length;i++) {
 					var strL = str.toLowerCase();
 					var n = data.results[i].Name.replace(strL/*new RegExp(strL, 'g')*/, "<strong>"+strL+"</strong>");
-					html += '<li class=""><a href="/'+data.results[i].Url+'">'+n+'</a></li>';
+					var b = data.results[i];
+					html += '<li class=""><a href="/'+data.results[i].Url+'"><div class="pull-left imgLiveSearch"><img src="/static/uploads/'+b.UserId+'/'+b.Url+'/profile/'+b.Image[0]+'"></div><div class="liveSearchRIght"><div>'+n+'</div><div><small class="liveSearchCat">'+b.Industry+'</small></div></div></a></li>';
 				}
 				html += '</ul>';
 			} else {
@@ -295,13 +305,13 @@ $(document).ready(function() {
 
 var BusinessFormSave = function() {
 	var timeoutId;
-	$('.businessForm input, .businessForm select').on('input', function() {
+	$('.businessForm input, .businessForm select').not('.phonePrefixC select').on('input select2:select', function() {
 		var _this = $(this);
 		var nodeName = $(this).prop('nodeName');
 		if(nodeName === "INPUT") {
 			clearTimeout(timeoutId);
 			timeoutId = setTimeout(function() {
-				if(_this.val() != "" || _this.hasClass("businessSocial") || _this.hasClass("businessWebsite")) {
+				if(_this.val() != "" || _this.hasClass("businessSocial") || _this.hasClass("businessWebsite") || _this.hasClass("businessSocial") || $(".businessState").is(':enabled')) {
 					ajaxBusiness();
 				}
 			}, 750);
@@ -386,6 +396,11 @@ var BusinessForm = function() {
 	var stateUsaSelect = $(".businessStateUsa");
 	var stateCanadaSelect = $(".businessStateCanada");
 	var stateAustraliaSelect = $(".businessStateAustralia");
+	
+	var select2Australia = $(".statesAustraliaSelect");
+	var select2Usa = $(".statesUsaSelect");
+	var select2Canada = $(".statesCanadaSelect");
+	
 	var countrySelect = $(".businessCountry");
 	var flag = false;
 	var currentCountry = countrySelect.val();
@@ -393,7 +408,7 @@ var BusinessForm = function() {
 	if (oldCountry == "Australia" || oldCountry == "United States" || oldCountry == "Canada") {
 		flag = true;
 	}
-	countrySelect.change(function(){
+	countrySelect.on("select2:select", function(){
 		oldCountry = currentCountry;
 		$( ".businessStateControl" ).removeClass("error-form").attr('data-original-title', '').tooltip('hide');
 		currentCountry = $(this).val();
@@ -401,25 +416,37 @@ var BusinessForm = function() {
 			flag = true;
 			stateSelect.prop('disabled', true).addClass("hidden");
 			stateCanadaSelect.prop('disabled', true).addClass("hidden");
+			select2Canada.addClass("hidden");
 			stateAustraliaSelect.prop('disabled', true).addClass("hidden");
+			select2Australia.addClass("hidden");
 			stateUsaSelect.prop('disabled', false).removeClass("hidden");
+			select2Usa.removeClass("hidden");
 		} else if(currentCountry == 'Canada') {
 			flag = true;
 			stateSelect.prop('disabled', true).addClass("hidden");
 			stateUsaSelect.prop('disabled', true).addClass("hidden");
+			select2Usa.addClass("hidden");
 			stateAustraliaSelect.prop('disabled', true).addClass("hidden");
+			select2Australia.addClass("hidden");
 			stateCanadaSelect.prop('disabled', false).removeClass("hidden");
+			select2Canada.removeClass("hidden");
 		} else if(currentCountry == 'Australia') {
 			flag = true;
 			stateSelect.prop('disabled', true).addClass("hidden");
 			stateUsaSelect.prop('disabled', true).addClass("hidden");
+			select2Usa.addClass("hidden");
 			stateCanadaSelect.prop('disabled', true).addClass("hidden");
+			select2Canada.addClass("hidden");
 			stateAustraliaSelect.prop('disabled', false).removeClass("hidden");
+			select2Australia.removeClass("hidden");
 		} else {
 			flag = false;
 			stateCanadaSelect.prop('disabled', true).addClass("hidden");
+			select2Canada.addClass("hidden");
 			stateUsaSelect.prop('disabled', true).addClass("hidden");
+			select2Usa.addClass("hidden");
 			stateAustraliaSelect.prop('disabled', true).addClass("hidden");
+			select2Australia.addClass("hidden");
 			stateSelect.prop('disabled', false).removeClass("hidden");
 		}
 		console.log(oldCountry);
@@ -609,6 +636,7 @@ function galleryUploadFunc() {
 			rmvFile = file.name;
 		}
 		if (rmvFile){
+			this.options.maxFiles = 1;
 			console.log(rmvFile);
 			$.ajax({
 				type: 'POST',
@@ -637,6 +665,7 @@ function galleryUploadFunc() {
 		acceptedFiles: ".jpeg,.jpg,.png",
 		init: function() {
 			this.on('addedfile', function(file) {
+				console.log(this.files.length);
 				if (this.files.length > 1) {
 				  this.removeFile(this.files[0]);
 				  this.options.maxFiles = 1;
@@ -674,6 +703,7 @@ function galleryUploadFunc() {
 		$.fancybox.close();
 	},
 	removedfile: function(file) {
+
 			var rmvFile = "";
 		console.log("delete file length: "+fileList3.length);
 		if(fileList3.length > 0) {
@@ -695,6 +725,7 @@ function galleryUploadFunc() {
 			rmvFile = file.name;
 		}
 		if (rmvFile){
+			this.options.maxFiles = 1;
 			console.log(rmvFile);
 			$.ajax({
 				type: 'POST',
@@ -717,8 +748,8 @@ function loadBusinessGallery() {
 		closeEffect	: 'fade',
 		type : "image",
 		thumbs : {
-			showOnStart : true,
-			hideOnClosing : true
+			autoStart : true,
+			hideOnClose : true
 		}
 	});
 }
@@ -805,7 +836,22 @@ function loadBusinessesAjax() {
 	}
 }
 
+function searchCartegoryList() {
+	$('.filterCateg').on('keyup', function () {
+    var value = this.value;
+    $('.categFilterList li').hide().each(function () {
+		console.log($(this).find("a").text());
+        if ($(this).find("a").text().toLowerCase().search(value.toLowerCase()) > -1) {
+            $(this).attr("style", "display: list-item !important");
+        }
+    });
+});
+}
 
+function formatState (state) {
+    return state.id;
+	
+};
 
 
 

@@ -3,6 +3,8 @@ package db
 import (
 	"github.com/kataras/iris/sessions"
 	"github.com/gorilla/securecookie"
+	"github.com/kataras/iris/sessions/sessiondb/file"
+	"app/config"
 )
 
 var (
@@ -15,7 +17,15 @@ var (
 		Encode: secureCookie.Encode,
 		Decode: secureCookie.Decode,
 	})
+
 )
+
+func init() {
+	
+	db, _ := file.New(config.GetAppPath()+"/sessions/", 0666)
+	db.Async(true)
+	Sessions.UseDatabase(db)
+}
 
 
 /*package db

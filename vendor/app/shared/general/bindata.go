@@ -31,7 +31,7 @@
 // templates/users_sidebar.html
 // DO NOT EDIT!
 
-package main
+package general
 
 import (
 	"bytes"

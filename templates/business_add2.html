@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container businessEdit_step2">
 	<div class="row">
 		<div class="col-md-6">
 			<div id="dashboard-content">
@@ -8,8 +8,8 @@
 							<label for="email">Industry</label>
 								<select class="form-control businessIndustry" name="business[industry]">
 									<option value="">Choose Industry</option>
-									{{range .data.industries}}
-									<option {{if eq . $.business.Industry}} selected {{end}} value="{{.}}">{{.}}</option>
+									{{range .categ}}
+									<option {{if eq .Name $.business.Industry}} selected {{end}} value="{{.Name}}">{{.Name}}</option>
 									{{end}}
 								</select>
 						</div>

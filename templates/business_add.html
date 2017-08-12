@@ -22,39 +22,48 @@
 						
 						<div class="form-group">
 							<label for="business[country]">Country</label>
-								<select class="form-control businessCountry" name="business[country]">
-									<option value="">Choose Country</option>
-									{{range .countries}}
-									<option {{if eq . $.business.Country}} selected {{end}} value="{{.}}">{{.}}</option>
-									{{end}}
-								</select>
+								<div class="countrySelect">
+									<select class="form-control businessCountry" name="business[country]">
+										<option value="">Choose Country</option>
+										{{range .countries}}
+										<option {{if eq . $.business.Country}} selected {{end}} value="{{.}}">{{.}}</option>
+										{{end}}
+									</select>
+							</div>
 						</div>
 						
 						<div class="form-group">
 							<label for="lastname">State</label>
 								
+								
 								<input type="text" class="form-control businessStateControl businessState {{if or (eq .business.Country "Australia") (eq .business.Country "United States") (eq .business.Country "Canada") (eq .business.Country "Australia")}}hidden{{end}}" name="business[state]" value="{{.business.State}}" placeholder="" {{if or (eq .business.Country "Australia") (eq .business.Country "Canada") (eq .business.Country "United States") (eq .business.Country "Australia")}}disabled{{end}}>
 								
-								<select class="form-control businessStateControl businessStateAll businessStateUsa {{if ne .business.Country "United States"}}hidden{{end}}" name="business[state]" {{if ne .business.Country "United States"}}disabled{{end}}>
-									<option value="">Choose State</option>
-									{{range .statesUSA}}
-									<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
-									{{end}}
-								</select>
+								<div class="statesUsaSelect {{if ne .business.Country "United States"}}hidden{{end}}">
+									<select class="form-control businessStateControl businessStateAll businessStateUsa" name="business[state]" {{if ne .business.Country "United States"}}disabled{{end}}>
+										<option value="">Choose State</option>
+										{{range .statesUSA}}
+										<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
+										{{end}}
+									</select>
+								</div>
 								
-								<select class="form-control businessStateControl businessStateCanada {{if ne .business.Country "Canada"}}hidden{{end}}" name="business[state]" {{if ne .business.Country "Canada"}}disabled{{end}}>
-									<option value="">Choose State</option>
-									{{range .statesCanada}}
-									<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
-									{{end}}
-								</select>
+								<div class="statesCanadaSelect {{if ne .business.Country "Canada"}}hidden{{end}}">
+									<select class="form-control businessStateControl businessStateCanada" name="business[state]" {{if ne .business.Country "Canada"}}disabled{{end}}>
+										<option value="">Choose State</option>
+										{{range .statesCanada}}
+										<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
+										{{end}}
+									</select>
+								</div>
 								
-								<select class="form-control businessStateControl businessStateAustralia {{if ne .business.Country "Australia"}}hidden{{end}}" name="business[state]" {{if ne .business.Country "Australia"}}disabled{{end}}>
-									<option value="">Choose State</option>
-									{{range .statesAustralia}}
-									<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
-									{{end}}
-								</select>
+								<div class="statesAustraliaSelect {{if ne .business.Country "Australia"}}hidden{{end}}">
+									<select class="form-control businessStateControl businessStateAustralia" name="business[state]" {{if ne .business.Country "Australia"}}disabled{{end}}>
+										<option value="">Choose State</option>
+										{{range .statesAustralia}}
+										<option {{if eq . $.business.State}} selected {{end}} value="{{.}}">{{.}}</option>
+										{{end}}
+									</select>
+								</div>
 						</div>
 						
 						<div class="form-group">

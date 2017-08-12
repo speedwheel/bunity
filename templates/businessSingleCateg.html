@@ -1,0 +1,29 @@
+<div class="container{{if .auth}} searchAjax{{end}}">
+	<div class="row">
+		<div class="col-md-12">
+			<ul class="list-unstyled bizFindResults">
+			{{if index .businesses}}
+			{{range .businesses}}
+				<li>
+					{{if index .Profile}}
+					<a class="bProfilePic" href="/{{.Id.Hex}}" class="{{getRatio (index .Profile 0)}}">
+						<img width="72" height="72" src="/static/uploads/{{.UserId.Hex}}/{{.Id.Hex}}/profile/{{index .Profile 0}}">
+					</a>
+					{{end}}
+					<div class="">
+						<a href="/{{.Id.Hex}}" class="{{if index .Profile}}{{getRatio (index .Profile 0)}}{{end}}">{{.Name}}</a>
+						<p style="margin-bottom:0;">{{.Industry}}</p>
+						<p style="margin-bottom:0;">{{.City}}, {{.Country}}</p>
+						<p style="margin-bottom:0;">{{countAr .Likes}} like this</p>
+					</div>
+				</li>
+			{{end}}
+			</ul>
+		
+			{{end}}
+			
+			
+			
+		</div>
+	</div>
+</div>

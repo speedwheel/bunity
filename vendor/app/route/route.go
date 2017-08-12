@@ -68,6 +68,9 @@ func Routes(app *iris.Application) {
 	businesses.Post("/sendsms", controller.SendSms)
 	businesses.Post("/verifycode", controller.VerifyCode)
 	
+	businesses.Get("/categories", controller.BusinessAllCategPage)
+	businesses.Get("/categories/{businessSlug:string}", controller.BussinessByCategPage)
+	
 	
 	businesses.Post("/updatephotos", controller.UpdatePhotos)
 }

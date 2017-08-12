@@ -159,52 +159,21 @@
 				<div class="text-box info-box">
 					<h3 class="title-box">Related Businesses</h3>
 					<div class="box-content">
+						{{range .ranBusiness}}
 						<div class="row business-box">
+							
 							<div class="col-sm-4 business-img">
-								<img src="/static/images/business-logo.jpg" class="img-responsive">
-							</div>
-							<div class="col-sm-8 business-text">
-								<strong class="block">Bridgeway Academy</strong>
-								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
-							</div>
-						</div>
-						<div class="row business-box">
-							<div class="col-sm-4 business-img">
-								<img src="/static/images/business-logo.jpg" class="img-responsive">
-							</div>
-							<div class="col-sm-8 business-text">
-								<strong class="block">Bridgeway Academy</strong>
-								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
-							</div>
-						</div>
-						<div class="row business-box">
-							<div class="col-sm-4 business-img">
-								<img src="/static/images/business-logo.jpg" class="img-responsive">
-							</div>
-							<div class="col-sm-8 business-text">
-								<strong class="block">Bridgeway Academy</strong>
-								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
-							</div>
-						</div>
-						<div class="row business-box">
-							<div class="col-sm-4 business-img">
-								<img src="/static/images/business-logo.jpg" class="img-responsive">
-							</div>
-							<div class="col-sm-8 business-text">
-								<strong class="block">Bridgeway Academy</strong>
-								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
-							</div>	
-						</div>
-						<div class="row business-box">
-							<div class="col-sm-4 business-img">
-								<img src="/static/images/business-logo.jpg" class="img-responsive">
+								{{if .Profile}}
+									<img src="/static/uploads/{{.UserId.Hex}}/{{.Id.Hex}}/profile/{{index .Profile 0}}" class="img-responsive">
+								{{end}}
 							</div>
 							
 							<div class="col-sm-8 business-text">
-								<strong class="block">Bridgeway Academy</strong>
-								<span class="block">Catasauqua, Pennsylavania, USA Education, Learning</span>
-							</div>	
+								<strong class="block">{{.Name}}</strong>
+								<span class="block">{{.City}}, {{.State}}, {{.Country}}<br> {{.Industry}}</span>
+							</div>
 						</div>
+						{{end}}
 					</div>
 				</div>
 			</div>

@@ -1,0 +1,18 @@
+<div class="container">
+	<div class="row">
+		{{range $index, $page := .categ}}
+			{{ $count := add $index 1 }}
+			{{if (or (divisible83 $count) (eq $count 1))}}
+			<div class="col-md-4">
+			<ul>
+			{{end}}
+			<li><a href="/businesses/categories/{{.Name}}">{{.Name}}</a></li>
+			
+			{{if (or (divisible83 (add $count 1)) )}}
+			</ul>
+			</div>
+			{{end}}
+		{{end}}
+		</ul>
+	</div>
+</div>

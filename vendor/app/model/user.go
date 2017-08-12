@@ -6,6 +6,8 @@ import (
 	"app/shared/db"
 	"log"
 	"html/template"
+	"fmt"
+	"math/big"
 )
 
 
@@ -77,6 +79,12 @@ type (
 		Lat float64 `json:"lat" bson:"lat" form:"lat,omitempty" facebook:"-"`
 		Lng float64 `json:"lng" bson:"lng" form:"lng,omitempty" facebook:"-"`
 	}
+	
+	Category struct {
+		Id  bson.ObjectId `json:"id" bson:"_id"  form:"-" facebook:"-"`
+		Name string `json:"name" bson:"name" form:"name,omitempty" facebook:"-"`
+		Slug string `json:"slug" bson:"slug" form:"slug,omitempty" facebook:"-"`
+	}
 )
 
 func SetUserSession(ctx context.Context) {
@@ -117,29 +125,18 @@ func GetBusinessByIDandUser(businessID bson.ObjectId, userID bson.ObjectId) Busi
 	business := Business{}
 	//if err := c.Find(bson.M{"_id": userID, "businesses": bson.M{ "$elemMatch": bson.M{"_id":businessID}}}).Select(bson.M{"_id":0, "businesses.$": 1}).One(&business); err != nil {
 	if err := c.Find(bson.M{"user_id": userID, "_id": businessID}).One(&business); err != nil {	
-	/*oe := bson.M{
-        "$match" :bson.M {"_id": userID, "businesses._id": businessID},
-	}
-	oa := bson.M{
-        "$project" :bson.M {"_id": 0, "businesses": 1},
-	}
-	oc := bson.M{
-        "$unwind":"$businesses",
-	}
-	pipe := c.Pipe([]bson.M{oe,oa, oc})*/
-	
-	//if err := pipe.One(&business); err != nil {	
 		log.Printf(err.Error())
 	}
 	Db.Close()
+	
 	return business
 }
 
-func GetBusinessByID(businessID bson.ObjectId) (error, Business){
+func GetBusinessByID(businessID bson.ObjectId) (error, *Business){
 	Db := db.MgoDb{}
 	Db.Init()
 	c := Db.C("businesses")
-	business := Business{}
+	business := &Business{}
 	
 	err := c.Find(bson.M{"_id": businessID}).One(&business)
 	Db.Close()
@@ -153,9 +150,62 @@ func GetAllBusinessByUser(userID bson.ObjectId) []Business{
 	c := Db.C("businesses")
 	business := []Business{}
 	if err := c.Find(bson.M{"user_id": userID}).All(&business); err != nil {	
-
 		log.Printf(err.Error())
 	}
 	Db.Close()
 	return business
+}
+
+func GetRandomBusinesses(count int) []Business{
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("businesses")
+	business := []Business{}
+	os := bson.M{
+        "$sample" :bson.M {"size": count},
+	}
+	pipe := c.Pipe([]bson.M{os})
+	
+	if err := pipe.All(&business); err != nil {
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return business
+}
+
+func GetIpByCountry(ip *big.Int) string {
+	fmt.Println(ip)
+	var country bson.M
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("dbip")
+	if err := c.Find(bson.M{"is": bson.M{"$lte": ip.Int64()}}).Select(bson.M{"co":1, "_id":0}).Sort("-is").One(&country); err != nil {
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return country["co"].(string)
+}
+
+func GetAllCategories(limit int) []Category {
+	var categories []Category
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("categories")
+	if err := c.Find(nil).Limit(limit).All(&categories); err != nil {	
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return categories
+}
+
+func GetBusinessByCateg(slug string) []Business {
+	var businesses []Business
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("businesses")
+	if err := c.Find(bson.M{"industry": slug}).All(&businesses); err != nil {	
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return businesses
 }

@@ -12,11 +12,9 @@ import(
 	"app/config"
 	//"io"
 	//"io/ioutil"
-	"path/filepath"
 	"math/rand"
 	"time"
-	"github.com/nfnt/resize"
-	"bytes"
+	//"bytes"
     "image"
 	"image/jpeg"
     "image/png"
@@ -28,6 +26,9 @@ import(
 	//"github.com/patrickmn/go-cache"
 	"github.com/kr/pretty"
 	"strings"
+	"github.com/disintegration/imaging"
+	"math/big"
+	"net"
 
 )
 
@@ -40,6 +41,8 @@ type LiveResults struct {
 	Name string
 	Image[] string
 	Url string
+	Industry string
+	UserId string
 }
 
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -56,6 +59,7 @@ var (
 	sizeBusiness = []string{"$100k - $1MM","$101MM +","$26MM - $100MM","$2MM - $5MM","$6MM - $25MM","Just Starting","Less than $100k"}
 	relationshipBusiness = []string{"I'm the owner of this company.", "I work for this company.","I don't work here, but I'm acting on behalf of this company.","I'm a user of Zaphiri improving the business listing."}
 	howYouHear = []string{"Business Breakthroughs International","Business Coach/Consultant","Business Mastery Event","Chet Holmes","Friend/Associate","Mitch Russo","Radio","Search Engine","Social Networking","Solution Provider","Tony Robbins","Trade Show","Twitter","Web Seminar"}
+	phonePrefix = map[string]string {"AD": "376","AE": "971","AF": "93","AG": "1-268","AI": "1-264","AL": "355","AM": "374","AO": "244","AQ": "672","AR": "54","AS": "1-684","AT": "43","AU": "61","AW": "297","AX": "358-18","AZ": "994","BA": "387","BB": "1-246","BD": "880","BE": "32","BF": "226","BG": "359","BH": "973","BI": "257","BJ": "229","BL": "590","BM": "1-441","BN": "673","BO": "591","BQ": "599","BR": "55","BS": "1-242","BT": "975","BV": "","BW": "267","BY": "375","BZ": "501","CA": "1","CC": "61","CD": "243","CF": "236","CG": "242","CH": "41","CI": "225","CK": "682","CL": "56","CM": "237","CN": "86","CO": "57","CR": "506","CU": "53","CV": "238","CW": "599","CX": "61","CY": "357","CZ": "420","DE": "49","DJ": "253","DK": "45","DM": "1-767","DO": "1-809 and 1-829","DZ": "213","EC": "593","EE": "372","EG": "20","EH": "212","ER": "291","ES": "34","ET": "251","FI": "358","FJ": "679","FK": "500","FM": "691","FO": "298","FR": "33","GA": "241","GB": "44","GD": "1-473","GE": "995","GF": "594","GG": "44-1481","GH": "233","GI": "350","GL": "299","GM": "220","GN": "224","GP": "590","GQ": "240","GR": "30","GS": "500","GT": "502","GU": "1-671","GW": "245","GY": "592","HK": "852","HM": " ","HN": "504","HR": "385","HT": "509","HU": "36","ID": "62","IE": "353","IL": "972","IM": "44-1624","IN": "91","IO": "246","IQ": "964","IR": "98","IS": "354","IT": "39","JE": "44-1534","JM": "1-876","JO": "962","JP": "81","KE": "254","KG": "996","KH": "855","KI": "686","KM": "269","KN": "1-869","KP": "850","KR": "82","KW": "965","KY": "1-345","KZ": "7","LA": "856","LB": "961","LC": "1-758","LI": "423","LK": "94","LR": "231","LS": "266","LT": "370","LU": "352","LV": "371","LY": "218","MA": "212","MC": "377","MD": "373","ME": "382","MF": "590","MG": "261","MH": "692","MK": "389","ML": "223","MM": "95","MN": "976","MO": "853","MP": "1-670","MQ": "596","MR": "222","MS": "1-664","MT": "356","MU": "230","MV": "960","MW": "265","MX": "52","MY": "60","MZ": "258","NA": "264","NC": "687","NE": "227","NF": "672","NG": "234","NI": "505","NL": "31","NO": "47","NP": "977","NR": "674","NU": "683","NZ": "64","OM": "968","PA": "507","PE": "51","PF": "689","PG": "675","PH": "63","PK": "92","PL": "48","PM": "508","PN": "870","PR": "1-787 and 1-939","PS": "970","PT": "351","PW": "680","PY": "595","QA": "974","RE": "262","RO": "40","RS": "381","RU": "7","RW": "250","SA": "966","SB": "677","SC": "248","SD": "249","SE": "46","SG": "65","SH": "290","SI": "386","SJ": "47","SK": "421","SL": "232","SM": "378","SN": "221","SO": "252","SR": "597","SS": "211","ST": "239","SV": "503","SX": "599","SY": "963","SZ": "268","TC": "1-649","TD": "235","TF": "","TG": "228","TH": "66","TJ": "992","TK": "690","TL": "670","TM": "993","TN": "216","TO": "676","TR": "90","TT": "1-868","TV": "688","TW": "886","TZ": "255","UA": "380","UG": "256","UM": "1","US": "1","UY": "598","UZ": "998","VA": "379","VC": "1-784","VE": "58","VG": "1-284","VI": "1-340","VN": "84","VU": "678","WF": "681","WS": "685","XK": "","YE": "967","YT": "262","ZA": "27","ZM": "260","ZW": "263"}
 )
 
 
@@ -65,6 +69,7 @@ func Profile(ctx context.Context) {
 	ctx.Next()
 	ctx.ViewData("user", session.Get("user"))
 	ctx.View("profile.html")
+	
 }
 
 func UsersEdit(ctx context.Context) {
@@ -209,6 +214,9 @@ func BusinessAddStep2(ctx context.Context) {
 		ctx.Redirect("/business/add")
 	}
 	
+	categ := model.GetAllCategories(0)
+	fmt.Println(categ)
+	
 	ctx.ViewData("data", map[string][]string{
 		"industries": industry,
 		"yearsBusiness": yearsBusiness,
@@ -217,6 +225,8 @@ func BusinessAddStep2(ctx context.Context) {
 		"relationshipBusiness": relationshipBusiness,
 		"howYouHear": howYouHear,
 	})
+	
+	ctx.ViewData("categ", categ)
 	
 	ctx.ViewData("business", business)
 	ctx.View("business_add2.html")
@@ -235,15 +245,16 @@ func BusinessAddStep22(ctx context.Context) {
 	} else {
 		ctx.Redirect("/business/add")
 	}
-	
+	categ := model.GetAllCategories(0)
+
 	ctx.ViewData("data", map[string][]string{
-		"industries": industry,
 		"yearsBusiness": yearsBusiness,
 		"nrEmployees": nrEmployees,
 		"sizeBusiness": sizeBusiness,
 		"relationshipBusiness": relationshipBusiness,
 		"howYouHear": howYouHear,
 	})
+	ctx.ViewData("categ", categ)
 	
 	ctx.ViewData("business", business)
 	ctx.View("business_add2.html")
@@ -330,7 +341,15 @@ func BusinessAddStep6(ctx context.Context) {
 		ctx.Redirect("/business/add")
 	}
 	
-	ctx.ViewData("businessID", bson.ObjectIdHex(ctx.Params().Get("businessID")).Hex())
+	addr := ctx.RemoteAddr()
+	ipInt := ipToInt(addr)
+	countryCode := model.GetIpByCountry(ipInt)
+	
+	
+	ctx.ViewData("countryCode", countryCode)
+	ctx.ViewData("businessID", ctx.Params().Get("businessID"))
+	ctx.ViewData("phonePrefix", phonePrefix)
+	
 	ctx.View("business_add6.html")
 }
 
@@ -346,7 +365,7 @@ func BusinessAddStep7(ctx context.Context) {
 	} else {
 		ctx.Redirect("/business/add")
 	}
-	ctx.ViewData("businessID", bson.ObjectIdHex(ctx.Params().Get("businessID")).Hex())
+	ctx.ViewData("businessID", ctx.Params().Get("businessID"))
 	ctx.View("business_add7.html")
 }
 
@@ -412,6 +431,16 @@ func BusinessEventsTracker(ctx context.Context) {
 			} else {
 				setValues["phone"] = business.Phone
 			}
+			
+			business.Country = ctx.FormValue("business[country]")
+			if business.Country == "" {
+				formError = append(formError, FormError{"businessCountry", "This field is required"})
+			} else {
+				setValues["country"] = business.Country
+				mapAddress += business.Country
+				
+			}
+			
 			business.Address = ctx.FormValue("business[address]")
 			if business.Address == "" {
 				formError = append(formError, FormError{"businessAddress", "This field is required"})
@@ -431,7 +460,7 @@ func BusinessEventsTracker(ctx context.Context) {
 				mapAddress += business.Area+","
 			}
 			business.State = ctx.FormValue("business[state]")
-			if business.State == "" {
+			if business.State == "" && (business.Country == "United States" || business.Country == "Canada" || business.Country == "Australia") {
 				formError = append(formError, FormError{"businessStateControl", "This field is required"})
 			} else {
 				setValues["state"] = business.State
@@ -450,14 +479,7 @@ func BusinessEventsTracker(ctx context.Context) {
 				setValues["postalcode"] = business.PostalCode
 				mapAddress += business.PostalCode+","
 			}
-			business.Country = ctx.FormValue("business[country]")
-			if business.Country == "" {
-				formError = append(formError, FormError{"businessCountry", "This field is required"})
-			} else {
-				setValues["country"] = business.Country
-				mapAddress += business.Country
-				
-			}
+			
 			fmt.Println(mapAddress)
 			if mapAddress != "" {
 				coor := general.MapsInit(mapAddress)
@@ -620,7 +642,7 @@ func UploadFiles(ctx context.Context) {
 	} else if ctx.FormValue("imageType") == "cover" {
 		folder = "cover"
 	}
-	file, info, err := ctx.FormFile("file")
+	file, _, err := ctx.FormFile("file")
 	userSession := session.Get("user").(model.User)
 	if err != nil {
 		ctx.HTML("Error while uploading: <b>" + err.Error() + "</b>")
@@ -628,32 +650,34 @@ func UploadFiles(ctx context.Context) {
 	}
 
 	defer file.Close()
-	var imageNew image.Image
+	var image image.Image
 	if ctx.FormValue("imageFormat") == "image/jpeg" {
-		imageNew, _ = jpeg.Decode(file)
+		image, _ = jpeg.Decode(file)
 	} else if ctx.FormValue("imageFormat") == "image/png" {
-		imageNew, _ = png.Decode(file)
+		image, _ = png.Decode(file)
 	}
 	
 	
 	
-	buf := new(bytes.Buffer)
-	jpeg.Encode(buf, imageNew, nil)
-	image, _, err := image.Decode(bytes.NewReader(buf.Bytes()))
+	//buf := new(bytes.Buffer)
+	//jpeg.Encode(buf, imageNew, nil)
+	//image, _, err := image.Decode(bytes.NewReader(buf.Bytes()))
 	
-	newImageResized := resize.Resize(800, 0, image, resize.Lanczos3)
-	
-	b := newImageResized.Bounds()
+
+	b := image.Bounds()
 	imgWidth := b.Max.X
 	imgHeight := b.Max.Y
+	newImageResized := imaging.CropAnchor(image, imgHeight, imgHeight, imaging.Center)
+	
+	
 	ratio := "1"
 	if imgHeight >= imgWidth {
 		ratio = "0"
 	}
 	
-	fnameOld := info.Filename
-	extension := filepath.Ext(fnameOld)
-	extension = ".jpg"
+	//fnameOld := info.Filename
+	//extension := filepath.Ext(fnameOld)
+	extension := ".jpg"
 	
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	fname := ""
@@ -670,17 +694,24 @@ func UploadFiles(ctx context.Context) {
 	if _, err := os.Stat(userFolder); os.IsNotExist(err) {
 		os.MkdirAll(userFolder, 0711)
 	}
-
-	out, err := os.OpenFile(userFolder+fname,
-		os.O_WRONLY|os.O_CREATE, 0666)
-
+	
+	
+	newImageResized = imaging.Resize(newImageResized, 256, 0, imaging.Lanczos)
+	err = imaging.Save(newImageResized, userFolder+fname)
 	if err != nil {
+		log.Println("Save failed: %v", err)
+	}
+
+	/*out, err := os.OpenFile(userFolder+fname,
+		os.O_WRONLY|os.O_CREATE, 0666)*/
+
+	/*if err != nil {
 		ctx.HTML("Error while uploading: <b>" + err.Error() + "</b>")
 		return
-	}
-	defer out.Close()
+	}*/
+	//defer out.Close()
 	
-	jpeg.Encode(out, newImageResized, nil)
+	//jpeg.Encode(out, newImageResized, nil)
 	//io.Copy(out, file)
 	
 	Db := db.MgoDb{}
@@ -722,6 +753,9 @@ func SendSms(ctx context.Context) {
 	userSession := session.Get("user").(model.User)
 	business := model.Business{}
 	phoneSms := ctx.FormValue("smsCode")
+	prefix := ctx.FormValue("prefix")
+	phoneNr := prefix + phoneSms
+	fmt.Println(phoneNr)
 	formError := []FormError{}
 	if phoneSms == "" {
 		formError = append(formError, FormError{"smsCode", "This field is required"})
@@ -747,7 +781,7 @@ func SendSms(ctx context.Context) {
 		params := &messagebird.MessageParams{Reference: "MyReference"}
 		message, _ := client.NewMessage(
 		  "Edward",
-		  []string{phoneSms},
+		  []string{phoneNr},
 		  business.SmsCode,
 		  params)
 		  
@@ -777,14 +811,12 @@ func VerifyCode(ctx context.Context) {
 }
 
 func BusinessProfilePage(ctx context.Context) {
-	user := model.Business{}
-	var err error
 	if !bson.IsObjectIdHex(ctx.Params().Get("businessID")){
 		ctx.NotFound()
 		return
 	}
 	businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
-	err, user = model.GetBusinessByID(businessID)
+	err, user := model.GetBusinessByID(businessID)
 	if err != nil {
 		ctx.NotFound()
 		return
@@ -798,8 +830,12 @@ func BusinessProfilePage(ctx context.Context) {
 		ctx.ViewData("liked", liked)
 	}
 	
+	randB := model.GetRandomBusinesses(5)
+	
+	
 	ctx.ViewData("nrLIkes", len(user.Likes))
 	ctx.ViewData("business", user)
+	ctx.ViewData("ranBusiness", randB)
 	ctx.View("business_profile/index.html")
 }
 
@@ -824,32 +860,29 @@ func UpdatePhotos(ctx context.Context) {
 
 func BusinessProfileMaps(ctx context.Context) {
 	//c := cache.New(5*time.Minute, 10*time.Minute)
-	user := model.Business{}
-	var err error
 	if !bson.IsObjectIdHex(ctx.Params().Get("businessID")){
 		ctx.NotFound()
 		return
 	}
 	businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
-	err, user = model.GetBusinessByID(businessID)
+	err, user := model.GetBusinessByID(businessID)
 	if err != nil {
 		ctx.NotFound()
 		return
 	}
 	
 	ctx.ViewData("business", user)
+	
 	ctx.View("business_profile/map.html")
 }
 
 func BusinessProfileWeb(ctx context.Context) {
-	user := model.Business{}
-	var err error
 	if !bson.IsObjectIdHex(ctx.Params().Get("businessID")){
 		ctx.NotFound()
 		return
 	}
 	businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
-	err, user = model.GetBusinessByID(businessID)
+	err, user := model.GetBusinessByID(businessID)
 	if err != nil {
 		ctx.NotFound()
 		return
@@ -874,6 +907,7 @@ func BusinessProfileWeb(ctx context.Context) {
 	}
 	
 	
+	
 	var pagesSlice []int
 	for i := 1; i <= int(pages); i++ {
         pagesSlice = append(pagesSlice, i)
@@ -885,14 +919,12 @@ func BusinessProfileWeb(ctx context.Context) {
 }
 
 func BusinessProfileInternal(ctx context.Context) {
-	user := model.Business{}
-	var err error
 	if !bson.IsObjectIdHex(ctx.Params().Get("businessID")){
 		ctx.NotFound()
 		return
 	}
 	businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
-	err, user = model.GetBusinessByID(businessID)
+	err, user := model.GetBusinessByID(businessID)
 	if err != nil {
 		ctx.NotFound()
 		return
@@ -997,7 +1029,7 @@ func LiveSearch(ctx context.Context) {
         "$match" :query,
 	}
 	oa := bson.M{
-        "$project": bson.M {"slug": 1, "profile": 1, "check":1, "pro":1},
+        "$project": bson.M {"slug": 1, "profile": 1, "check":1, "pro":1, "user_id":1, "industry":1},
 	}
 	ol := bson.M{
         "$limit" :pageSize,
@@ -1017,7 +1049,7 @@ func LiveSearch(ctx context.Context) {
 	var excludeIds []bson.ObjectId	
 	searchResults := []LiveResults{}
 	for _, item := range business {
-		searchResults = append(searchResults, LiveResults{item.Slug, item.Profile, item.Id.Hex()})
+		searchResults = append(searchResults, LiveResults{item.Slug, item.Profile, item.Id.Hex(), item.Industry, item.UserId.Hex()})
 		excludeIds = append(excludeIds, item.Id)
     }
 
@@ -1038,7 +1070,7 @@ func LiveSearch(ctx context.Context) {
 			}
 			for _, item := range business2 {
 				if len(searchResults) < 8 {
-					searchResults = append(searchResults, LiveResults{item.Slug, item.Profile, item.Id.Hex()})
+					searchResults = append(searchResults, LiveResults{item.Slug, item.Profile, item.Id.Hex(), item.Industry, item.UserId.Hex()})
 				}
 			}
 		}
@@ -1055,6 +1087,11 @@ func BusinessSearch(ctx context.Context) {
 	query := bson.M{}
 	searchStr := strings.ToLower(ctx.FormValue("q"))
 	businessCategory := ctx.FormValue("business_category")
+	likedFriends := ctx.FormValue("liked_friends")
+	country := ctx.FormValue("country")
+	if country != "" {
+		query["country"] = country
+	}
 	query["slug"] = bson.M{"$regex": searchStr}
 	if(businessCategory != "") {
 		query["industry"] = businessCategory
@@ -1063,6 +1100,7 @@ func BusinessSearch(ctx context.Context) {
 	if verified == "1" {
 		query["check"] = 1
 	}
+	
 	//query["$text"] = bson.M{"$search": searchStr}
 	var business []bson.M
 	var business2 []bson.M
@@ -1072,10 +1110,17 @@ func BusinessSearch(ctx context.Context) {
 		session := db.Sessions.Start(ctx)
 		userSession := session.Get("user").(model.User)
 		query["likes"] = userSession.Id
+		//liked := userSession.Liked
+		//query["likes"] = bson.M{"$in": liked}
+		//pretty.Println(query["likes"])
 	}
 	Db := db.MgoDb{}
 	Db.Init()
 	c := Db.C("businesses")
+	
+	/*if likedFriends == "1" {
+		c := Db.C("users")
+	}*/
 	
 	if(ctx.Method() == "GET") {
 		pageNum, err = ctx.Params().GetInt("pageCount")
@@ -1129,7 +1174,7 @@ func BusinessSearch(ctx context.Context) {
 		log.Printf(err.Error())
 	}
 	
-	pretty.Println(skips)
+	pretty.Println(business)
 	
 	
 	countTotal, err := c.Find(query).Count()
@@ -1155,6 +1200,9 @@ func BusinessSearch(ctx context.Context) {
 		query2 := bson.M{}
 		query2["slug"] = bson.M{"$regex": searchStr}
 		query2["_id"] = bson.M{"$nin": excludeIds}
+		if country != "" {
+			query2["country"] = country
+		}
 		if(businessCategory != "") {
 			query2["industry"] = businessCategory
 		}
@@ -1222,13 +1270,18 @@ func BusinessSearch(ctx context.Context) {
 	Db.Close()
 	
 	if(ctx.Method() == "GET") {
+		categ := model.GetAllCategories(0)
 		ctx.ViewData("searchStr", searchStr)
 		ctx.ViewData("business", business)
 		ctx.ViewData("pageNum", pagesSlice)
-		ctx.ViewData("industries", industry)
-		ctx.ViewData("industries", industry)
+		ctx.ViewData("industries", categ)
 		ctx.ViewData("businessCategory", businessCategory)
 		ctx.ViewData("verified", verified)
+		ctx.ViewData("likedFriends", likedFriends)
+		ctx.ViewData("countries", countries)
+		ctx.ViewData("selectedCountry", country)
+		
+		
 		ctx.View("search.html")
 	} else if (ctx.Method() == "POST") {
 		fmt.Println(pages)
@@ -1238,3 +1291,23 @@ func BusinessSearch(ctx context.Context) {
 		ctx.JSON(map[string]interface{}{"businesses": business})
 	}
 }
+
+func BusinessAllCategPage(ctx context.Context) {
+	categ := model.GetAllCategories(0)
+	ctx.ViewData("categ", categ)
+	ctx.View("businessCateg.html")
+}
+
+func BussinessByCategPage(ctx context.Context) {
+	categSlug := ctx.Params().Get("businessSlug")
+	businesses := model.GetBusinessByCateg(categSlug)
+	ctx.ViewData("businesses", businesses)
+	ctx.View("businessSingleCateg.html")
+}
+
+func ipToInt(IP string) *big.Int {
+    IPvAddr := net.ParseIP(IP).To4()
+    IPvInt := big.NewInt(0)
+    IPvInt.SetBytes(IPvAddr)
+    return IPvInt
+} 

@@ -1,5 +1,5 @@
 body {
-	font-family:arial;
+	font-family:arial!important;
 }
 .block {
 	display:block;
@@ -48,18 +48,23 @@ body {
     border-radius: 2px;
     box-shadow: 0 4px 6px 2px rgba(0, 0, 0, .10);
 	top:37px;
-	z-index:1;
+	z-index:6;
 }
 .searchResults ul {
-	padding: 0 7px;
+	margin:0;
 }
 .searchResults li {
-	margin: 7px 8px;
+
+	overflow:hidden;
+}
+.searchResults li:hover {
+	background: #ecf0f7;
 }
 .searchResults ul a {
 	color: #1d2129;
 	display:block;
 	font-size: 14px;
+	overflow:hidden;
 }
 .searchLoad {
 	line-height: 23px;
@@ -68,6 +73,9 @@ body {
     text-align: center;
     font-size: 11px;
     font-weight: bold;
+}
+.liveSearchCat {
+	color:#777;
 }
 .logo-container {
 	padding-top: 11px;
@@ -495,8 +503,8 @@ vertical-align:top;
  }
  
  /* dropzone */
- #galleryUpload {
-	 
+ .dropzone  {
+	overflow:hidden!important;
  }
  .dropzone .dz-preview .dz-image img {
 	 width:120px;
@@ -593,4 +601,106 @@ vertical-align:top;
 .bizFindResults li {
 	padding:12px 0;
 	border-bottom: 1px solid #e3e6e9;
+}
+.select2-container {
+	width:100%;
+}
+.imgLiveSearch img {
+	width:24px;
+	height:24px;
+	margin: 13px 0 6px 8px;
+}
+.liveSearchRIght {
+	margin: 7px 8px;
+	float:left;
+}
+.dropzoneBox {
+	height:120px;
+	width:120px;
+	border:1px dashed #80a4c4;
+	float:left;
+	margin: 16px;
+	line-height: 120px;
+}
+.dropzone .dz-message {
+	overflow:hidden!important;
+	display:block!important;
+	position:absolute!important;
+	margin:0!important;
+}
+#imageUploadContainer {
+	min-width: 648px!important;
+}
+#imageUploadContainer .dz-image-preview {
+	display:block;
+	float:left;
+}
+#imageUploadContainer .dz-image-preview:nth-child(6) {
+	clear:both;
+}
+.dz-details {
+	display:none;
+}
+.editPhotoTitle {
+	background:#333;
+	color:#fff;
+	padding: 10px 15px;
+}
+#imageUploadContainer {
+	padding:0;
+}
+.dropzone .dz-preview .dz-remove {
+    font-size: 11px;
+    text-align: center;
+    display: none!important;
+    cursor: pointer;
+    border: none;
+    position: absolute;
+    z-index: 10;
+    color: #fff;
+    background: #a50502;
+    border-radius: 50%;
+    width: 23px;
+    height: 23px;
+    line-height: 23px;
+    right: -5px;
+    top: -5px;
+}
+.dropzone .dz-preview .dz-remove:hover {
+	text-decoration:none!important;
+}
+.dz-image-preview:hover .dz-remove {
+	display:block!important;
+}
+.dropzone {
+	border:none!important;
+}
+#galleryUpload {
+	min-height:344px;
+}
+#coverUpload, #profileUpload {
+	min-height:192px;
+}
+.dropzone .dz-preview .dz-image {
+	border-radius: 0!important;
+}
+.dropzone .dz-preview:hover .dz-image img {
+	 -webkit-transform: inherit!important;
+    -moz-transform: inherit!important;
+    -ms-transform: inherit!important;
+    -o-transform: inherit!important;
+    transform: inherit!important;
+    -webkit-filter: blur(0)!important;
+    filter: blur(0)!important;
+}
+.editPhotoSubTitle {
+	padding: 25px 15px 0 15px;
+    font-size: 12px;
+}
+.dropzone .fa-camera {
+	font-size:20px;
+	color:#2d2d2d;
+}
+.phonePrefixC .select2-container {
+	width:100%!important;
 }
