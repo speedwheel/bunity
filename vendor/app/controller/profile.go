@@ -24,7 +24,7 @@ import(
 	"app/shared/general"
 	"math"
 	//"github.com/patrickmn/go-cache"
-	"github.com/kr/pretty"
+	//"github.com/kr/pretty"
 	"strings"
 	"github.com/disintegration/imaging"
 	"math/big"
@@ -424,6 +424,7 @@ func BusinessEventsTracker(ctx context.Context) {
 			} else {
 				setValues["name"] = business.Name
 				setValues["slug"] = strings.ToLower(business.Name)
+				setValues["nameSplit"] = strings.Fields(strings.ToLower(business.Name))
 			}
 			business.Phone = ctx.FormValue("business[phone]")
 			if business.Phone == "" {
@@ -496,6 +497,12 @@ func BusinessEventsTracker(ctx context.Context) {
 			} else {
 				setValues["industry"] = business.Industry
 			}
+			business.Categ2 = ctx.FormValue("business[categ2]")
+			if business.Categ2 == "" {
+				formError = append(formError, FormError{"businessCateg2", "This field is required"})
+			} else {
+				setValues["categ2"] = business.Categ2
+			}
 			business.YearsBusiness = ctx.FormValue("business[yearsBusiness]")
 			if business.YearsBusiness == "" {
 				formError = append(formError, FormError{"businessYearsBusiness", "This field is required"})
@@ -524,7 +531,7 @@ func BusinessEventsTracker(ctx context.Context) {
 			if business.HowYourHear == "" {
 				formError = append(formError, FormError{"businessHowYourHear", "This field is required"})
 			} else {
-				setValues["howYouHear"] = business.HowYourHear
+				setValues["howYourHear"] = business.HowYourHear
 			}
 			
 			
@@ -596,6 +603,10 @@ func BusinessEventsTracker(ctx context.Context) {
 	
 }
 
+func splitWord() {
+
+}
+
 
 func BusinessAddFinish(ctx context.Context) {
 	session := db.Sessions.Start(ctx)
@@ -614,6 +625,7 @@ func BusinessAddFinish(ctx context.Context) {
 		business.Verified = 0
 		business.Premium = 0
 		business.Slug = strings.ToLower(business.Name)
+		business.NameSplit = strings.Fields(business.Slug)
 		if err := c.Insert(&business); err != nil {
 			panic(err)
 		}
@@ -633,14 +645,18 @@ func BusinessAddFinish(ctx context.Context) {
 }
 
 func UploadFiles(ctx context.Context) {
+	var image image.Image
+	var resizeWidth int
 	session := db.Sessions.Start(ctx)
 	var folder string
 	if ctx.FormValue("imageType") == "gallery" {
 		folder = "gallery"
 	} else if ctx.FormValue("imageType") == "profile" {
 		folder = "profile"
+		resizeWidth = 160
 	} else if ctx.FormValue("imageType") == "cover" {
 		folder = "cover"
+		resizeWidth = 840
 	}
 	file, _, err := ctx.FormFile("file")
 	userSession := session.Get("user").(model.User)
@@ -648,9 +664,10 @@ func UploadFiles(ctx context.Context) {
 		ctx.HTML("Error while uploading: <b>" + err.Error() + "</b>")
 		return
 	}
-
+	
 	defer file.Close()
-	var image image.Image
+	
+	
 	if ctx.FormValue("imageFormat") == "image/jpeg" {
 		image, _ = jpeg.Decode(file)
 	} else if ctx.FormValue("imageFormat") == "image/png" {
@@ -667,13 +684,9 @@ func UploadFiles(ctx context.Context) {
 	b := image.Bounds()
 	imgWidth := b.Max.X
 	imgHeight := b.Max.Y
-	newImageResized := imaging.CropAnchor(image, imgHeight, imgHeight, imaging.Center)
-	
+	thumbSize := imgHeight
 	
 	ratio := "1"
-	if imgHeight >= imgWidth {
-		ratio = "0"
-	}
 	
 	//fnameOld := info.Filename
 	//extension := filepath.Ext(fnameOld)
@@ -696,7 +709,16 @@ func UploadFiles(ctx context.Context) {
 	}
 	
 	
-	newImageResized = imaging.Resize(newImageResized, 256, 0, imaging.Lanczos)
+	
+	
+	if imgHeight >= imgWidth {
+		ratio = "0"
+		thumbSize = imgWidth
+	}
+	//img1  := imaging.CropAnchor(image, thumbSize, thumbSize, imaging.Center)
+	fmt.Println(thumbSize)
+	
+	newImageResized := imaging.Resize(image, resizeWidth, 0, imaging.Lanczos)
 	err = imaging.Save(newImageResized, userFolder+fname)
 	if err != nil {
 		log.Println("Save failed: %v", err)
@@ -815,6 +837,7 @@ func BusinessProfilePage(ctx context.Context) {
 		ctx.NotFound()
 		return
 	}
+
 	businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
 	err, user := model.GetBusinessByID(businessID)
 	if err != nil {
@@ -1006,8 +1029,15 @@ func IsLike(businessID bson.ObjectId, userID bson.ObjectId) bool {
 
 func LiveSearch(ctx context.Context) {
 	query := bson.M{}
+	sliceBson := []bson.M{}
 	searchStr := strings.ToLower(ctx.FormValue("keyword"))
-	query["slug"] = bson.M{"$regex": searchStr}
+	splidWords := strings.Fields(searchStr)
+	for _, w := range splidWords {
+        sliceBson = append(sliceBson, bson.M{"nameSplit": bson.M{"$regex": "^"+w}})
+    }
+	query["$and"] = sliceBson
+	//query["slug"] = bson.M{"$regex": "\\b"+searchStr+"\\w*"}
+	//query["nameSplit"] = bson.M{"$regex": "^"+searchStr}
 	business := []model.Business{}
 	business2 := []model.Business{}
 	
@@ -1026,7 +1056,7 @@ func LiveSearch(ctx context.Context) {
 		panic(err)
 	}*/
 	oe := bson.M{
-        "$match" :query,
+        "$match" : query,
 	}
 	oa := bson.M{
         "$project": bson.M {"slug": 1, "profile": 1, "check":1, "pro":1, "user_id":1, "industry":1},
@@ -1057,7 +1087,7 @@ func LiveSearch(ctx context.Context) {
 		if len(searchResults) < 8 {
 			query2 := bson.M{}
 			query2["_id"]  = bson.M{"$nin": excludeIds}
-			query2["slug"] = bson.M{"$regex": searchStr}
+			query2["$and"] = sliceBson
 			/*if err := c.Find(bson.M{"_id": bson.M{"$nin": excludeIds}, "slug": bson.M{"$regex": searchStr}}).Limit(8).Select(bson.M{"slug":1, "profile":1}).Sort("-pro", "-check").All(&business2); err != nil {
 				panic(err)
 			}*/
@@ -1094,7 +1124,7 @@ func BusinessSearch(ctx context.Context) {
 	}
 	query["slug"] = bson.M{"$regex": searchStr}
 	if(businessCategory != "") {
-		query["industry"] = businessCategory
+		query["$or"] = []bson.M{bson.M{"industry": businessCategory},bson.M{"categ2": businessCategory}}
 	}
 	verified := ctx.FormValue("verified")
 	if verified == "1" {
@@ -1118,9 +1148,7 @@ func BusinessSearch(ctx context.Context) {
 	Db.Init()
 	c := Db.C("businesses")
 	
-	/*if likedFriends == "1" {
-		c := Db.C("users")
-	}*/
+
 	
 	if(ctx.Method() == "GET") {
 		pageNum, err = ctx.Params().GetInt("pageCount")
@@ -1140,7 +1168,7 @@ func BusinessSearch(ctx context.Context) {
 		}
 	}
 	
-	pageSize := 3
+	pageSize := 40
 	skips := pageSize * (pageNum -1)
 	/*if err := c.Find(query).Skip(skips).Limit(pageSize).Select(bson.M{"name":1, "profile":1, "description":1, "user_id":1, "likes":1}).Sort("-pro", "-check").All(&business); err != nil {
 		panic(err)
@@ -1173,8 +1201,7 @@ func BusinessSearch(ctx context.Context) {
 	if err := pipe.All(&business); err != nil {	
 		log.Printf(err.Error())
 	}
-	
-	pretty.Println(business)
+
 	
 	
 	countTotal, err := c.Find(query).Count()
@@ -1204,7 +1231,7 @@ func BusinessSearch(ctx context.Context) {
 			query2["country"] = country
 		}
 		if(businessCategory != "") {
-			query2["industry"] = businessCategory
+			query2["$or"] = []bson.M{bson.M{"industry": businessCategory},bson.M{"categ2": businessCategory}}
 		}
 		if verified == "1" {
 			query2["check"] = 1

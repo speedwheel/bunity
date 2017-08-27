@@ -4,11 +4,15 @@
 			<div id="dashboard-content">
 				<form class="businessFormSMS" action="/businesses/add/finish" method="post">
 					<div class="panel-body2">
-						<div class="form-group">
-							<label for="firstname">Verification Code</label>
-							<input type="text" class="form-control verificationCode" name="business[verificationCode]">
+					<div class="row">
+						<div class="form-group col-md-2">
+							<i class="fa fa-mobile phoneVerificationIcon" aria-hidden="true"></i>
 						</div>
-						
+						<div class="form-group col-md-10">
+							<label for="firstname">Verification Code</label>
+							<input type="text" class="form-control verificationCode" name="business[verificationCode]" placeholder="####" maxlength="4">
+						</div>
+					</div>
 						<br>
 						<input type="hidden" id="businessID" name="businessID" value="{{.businessID}}">
 						<input type="hidden" name="step" value="7">

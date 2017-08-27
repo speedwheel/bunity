@@ -4,20 +4,24 @@
 			<div id="dashboard-content">
 				<form class="businessForm" action="/businesses/add/finish" method="post">
 					<div class="panel-body2">
-						
-						<div class="form-group col-md-4 phonePrefixC" >
-							<label>Prefix</label>
-							<select width="100%" class="phonePrefix">
-							{{range $index, $value := .phonePrefix}}
-								
-								<option {{if eq $.countryCode $index}} selected {{end}} value="+{{$value}}">{{$index}} (+{{$value}})</option>
-							{{end}}
-							</select>
-						</div>
-						
-						<div class="form-group col-md-8">
-							<label for="phoneVerification">Phone Number</label>
-							<input type="text" class="phoneSMSField form-control" name="phoneVerification">
+						<div class="row">
+							<div class="form-group col-md-2">
+								<i class="fa fa-mobile phoneVerificationIcon" aria-hidden="true"></i>
+							</div>
+							<div class="form-group col-md-4 phonePrefixC" >
+								<label>Prefix</label>
+								<select width="100%" class="phonePrefix">
+								{{range $index, $value := .phonePrefix}}
+									
+									<option {{if eq $.countryCode $index}} selected {{end}} value="+{{$value}}">{{$index}} (+{{$value}})</option>
+								{{end}}
+								</select>
+							</div>
+							
+							<div class="form-group col-md-6">
+								<label for="phoneVerification">Phone Number</label>
+								<input type="text" class="phoneSMSField form-control" name="phoneVerification">
+							</div>
 						</div>
 						<input type="hidden" id="businessID" name="businessID" value="{{.businessID}}">
 						<input type="hidden" name="step" value="6">

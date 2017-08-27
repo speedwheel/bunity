@@ -14,7 +14,7 @@
 					{{end}}
 				</div>
 				<div class="main-menu-container">
-					<div class="profile-picture {{if index .business.Profile}} {{getRatio (index .business.Profile 0)}} {{end}}">
+					<div class="profile-picture">
 						<div class="inner-profile-picture">
 							{{if .auth}}
 							<div class="profile-btn-container">
@@ -147,7 +147,7 @@
 						<div class="galleryContainer" style="overflow:hidden;">
 							{{if index .business.Gallery}}
 								{{range .business.Gallery}}
-									<div class="galleryImageSIngle {{getRatio .}}">
+									<div class="galleryImageSIngle">
 										<a class="businessGallery" data-fancybox="gallery" href="/static/uploads/{{$.business.UserId.Hex}}/{{$.business.Id.Hex}}/gallery/{{.}}" href="#"><img src="/static/uploads/{{$.business.UserId.Hex}}/{{$.business.Id.Hex}}/gallery/{{.}}"></a>
 									</div>
 								{{end}}
@@ -189,6 +189,7 @@
 	<input type="hidden" id="businessID" name="businessID" value="{{.business.Id.Hex}}">
 	<div style="min-width:800px;" id="imageUploadContainer" style="display:none;"></div>
 <script>
+var userID = "{{.business.UserId.Hex}}"
 var thumbnailUrls=[];
 var profileThumbnailUrls=[];
 var coverThumbnailUrls=[];

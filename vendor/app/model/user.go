@@ -38,6 +38,7 @@ type (
 		UserId  bson.ObjectId `json:"user_id" bson:"user_id"  form:"-" facebook:"-"`
 		Name string `json:"name" bson:"name" form:"name,omitempty" facebook:"-"`
 		Slug string `json:"slug" bson:"slug" form:"slug,omitempty" facebook:"-"`
+		NameSplit []string `json:"nameSplit" bson:"nameSplit" form:"nameSplit,omitempty" facebook:"-"`
 		Phone string `json:"phone" bson:"phone" form:"phone,omitempty" facebook:"-"`
 		Address string `json:"address" bson:"address" form:"address,omitempty" facebook:"-"`
 		Address2 string `json:"address2" bson:"address2" form:"address2,omitempty" facebook:"-"`
@@ -48,6 +49,7 @@ type (
 		Area string `json:"area" bson:"area" form:"area,omitempty" facebook:"-"`
 		Country string `json:"country" bson:"country" form:"country,omitempty" facebook:"-"`
 		Industry string `json:"industry" bson:"industry" form:"industry,omitempty" facebook:"-"`
+		Categ2 string `json:"categ2" bson:"categ2" form:"categ2,omitempty" facebook:"-"`
 		YearsBusiness string `json:"yearsBusiness" bson:"yearsBusiness" form:"yearsBusiness,omitempty" facebook:"-"`
 		NumberEmployees string `json:"numberEmployees" bson:"numberEmployees" form:"numberEmployees,omitempty" facebook:"-"`
 		SizeBusiness string `json:"sizeBusiness" bson:"sizeBusiness" form:"sizeBusiness,omitempty" facebook:"-"`
@@ -203,9 +205,10 @@ func GetBusinessByCateg(slug string) []Business {
 	Db := db.MgoDb{}
 	Db.Init()
 	c := Db.C("businesses")
-	if err := c.Find(bson.M{"industry": slug}).All(&businesses); err != nil {	
+	if err := c.Find(bson.M{ "$or": []bson.M{bson.M{"industry": slug}, bson.M{"categ2": slug}}}).All(&businesses); err != nil {	
 		log.Printf(err.Error())
 	}
+	
 	Db.Close()
 	return businesses
 }

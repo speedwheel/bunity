@@ -5,21 +5,22 @@
 			
 			<h3>Filter results</h3>
 			<h4>CATEGORY</h4>
-			<input class="form-control filterCateg" name="filterCateg">
+			<div class="choose_categoryContainer">
+				<a href="#" class="choose_categoryBtn">Choose a cateogry</a>
+			</div>
+			<input class="form-control filterCateg hidden" name="filterCateg">
 			<ul class="list-unstyled categFilterList">
 				
-				<li><a href="/search/business?q={{$.searchStr}}">Any Category</a></li>
+				<li><a {{if not $.businessCategory}}class="active" {{end}} href="/search/business?q={{$.searchStr}}">Any Category</a></li>
 				{{range  $index, $page := .industries}}
 				{{ $count := add $index 1 }}
 				
-				<li {{if ge $count 15}}class="hidden"{{end}}><a href="/search/business?q={{$.searchStr}}&business_category={{.Name}}{{if $.verified}}&verified=1{{end}}{{if $.selectedCountry}}&country={{$.selectedCountry}}{{end}}">{{.Name}}</a></li>
+				<li {{if (and (ge $count 15) (ne .Name $.businessCategory))}}class="hidden"{{end}}><a {{if eq .Name $.businessCategory}}class="active"{{end}} href="/search/business?q={{$.searchStr}}{{if ne $.businessCategory .Name}}&business_category={{.Name}}{{end}}{{if $.verified}}&verified=1{{end}}{{if $.selectedCountry}}&country={{$.selectedCountry}}{{end}}">{{.Name}}</a></li>
 				{{end}}
-				<li><a href="/businesses/categories">View All</a></li>
+				<li><a class="view_all" href="/businesses/categories">View All</a></li>
 			</ul>
 			<h4>VERIFIED</h4>
-			<a href="/search/business?q={{$.searchStr}}{{if $.businessCategory}}&business_category={{$.businessCategory}}{{end}}{{if $.verified}}{{else}}&verified=1{{end}}{{if $.selectedCountry}}&country={{$.selectedCountry}}{{end}}"> Verified</a>
-			<h4>LIKED BY FRIENDS</h4>
-			<a href="/search/business?q={{$.searchStr}}{{if $.businessCategory}}&business_category={{$.businessCategory}}{{end}}{{if $.verified}}&verified=1{{end}}{{if $.likedFriends}}{{else}}&liked_friends=1{{end}}{{if $.selectedCountry}}&country={{$.selectedCountry}}{{end}}"> Liked by friends</a>
+			<a class="verifiedBtn {{if .verified}}active{{end}}" href="/search/business?q={{$.searchStr}}{{if $.businessCategory}}&business_category={{$.businessCategory}}{{end}}{{if $.verified}}{{else}}&verified=1{{end}}{{if $.selectedCountry}}&country={{$.selectedCountry}}{{end}}"> Verified</a>
 			<h4>Country</h4>
 			<form>
 			<input class="searchTerm" type="hidden" name="q" value="{{.searchStr}}" >
@@ -44,12 +45,10 @@
 			{{range .business}}
 				<li>
 					{{if index .profile}}
-					<a class="bProfilePic" href="/{{._id.Hex}}" class="{{getRatio (index .profile 0)}}">
-						<img width="72" height="72" src="/static/uploads/{{.user_id.Hex}}/{{._id.Hex}}/profile/{{index .profile 0}}">
-					</a>
+				
 					{{end}}
 					<div class="">
-						<a href="/{{._id.Hex}}" class="{{if index .profile}}{{getRatio (index .profile 0)}}{{end}}">{{.name}}</a>
+						<a href="/{{._id.Hex}}" >{{.name}}</a>
 						<p style="margin-bottom:0;">{{.industry}}</p>
 						<p style="margin-bottom:0;">{{.city}}, {{.country}}</p>
 						<p style="margin-bottom:0;">{{.nrLikes}} like this</p>

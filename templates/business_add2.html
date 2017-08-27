@@ -14,6 +14,16 @@
 								</select>
 						</div>
 						
+							<div class="form-group">
+							<label for="email">Industry 2</label>
+								<select class="form-control businessCateg2" name="business[categ2]">
+									<option value="">Choose Industry</option>
+									{{range .categ}}
+									<option {{if eq .Name $.business.Categ2}} selected {{end}} value="{{.Name}}">{{.Name}}</option>
+									{{end}}
+								</select>
+						</div>
+						
 						<div class="form-group">
 							<label for="email">Years in Business</label>
 								<select class="form-control businessYearsBusiness" name="business[yearsBusiness]">

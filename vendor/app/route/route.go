@@ -5,6 +5,7 @@ import(
 	"app/controller"
 	"app/model"
 	"app/shared/general"
+	"github.com/kataras/iris/context"
 )
 
 
@@ -73,4 +74,11 @@ func Routes(app *iris.Application) {
 	
 	
 	businesses.Post("/updatephotos", controller.UpdatePhotos)
+	
+	dashboard := app.Party("office.")
+	{
+		dashboard.Get("/", func(ctx context.Context) {
+			ctx.Writef("HEY FROM the dashboard")
+		})
+	}
 }

@@ -16,30 +16,15 @@
   <script src="/static/js/dropzone.js"></script>
   <script src="/static/js/select2.min.js?v=2"></script>
   <script src="/static/js/jquery.fancybox.min.js"></script>
-  <script src="/static/js/custom.js?v=1.9991"></script>
+  <script src="/static/js/bootstrap-notify.min.js"></script>
+  <script src="/static/js/cropper.min.js"></script>
+  <script src="/iris-ws.js"></script>
+  <script src="/static/js/custom.js?v=1.9992"></script>
   {{if not .auth}}
    <script src="https://apis.google.com/js/api:client.js"></script>
    <script src="/static/js/social.login.js"></script>
    
   {{end}}
-	<!--<script>var timeoutId2; tinymce.init({ selector:'textarea', plugins: "paste", paste_as_text: true,
-		setup:function(ed) {
-       ed.on('keyup', function(e) {
-			
-			clearTimeout(timeoutId2);
-				var timeoutId2 = setTimeout(function() {
-					ajaxBusiness();
-console.log();
-				}, 2000);
-			
-       });
-   },
-	init_instance_callback: "insert_contents",
- });
 
-function insert_contents(inst){
-    inst.setContent('');
-}
--->
 </body>
 </html>

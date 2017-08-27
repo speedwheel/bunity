@@ -12,13 +12,14 @@
     <link rel="stylesheet" href="static/css/jquery.mmenu.css">-->
   <link rel="stylesheet" href="/static/css/bootstrap.min.css">
   
-  <link rel="stylesheet" href="/static/css/style.css?v=1.15297">
+  <link rel="stylesheet" href="/static/css/style.css?v=1.15298">
   <link rel="stylesheet" href="/static/css/responsive.css">
   <link rel="stylesheet" href="/static/css/dropzone.css">
    <link rel="stylesheet" href="/static/css/jquery.fancybox.min.css">
    <link rel="stylesheet" href="/static/css/select2.min.css">
    <link rel="stylesheet" href="/static/js/skins/lightgray/skin.min.css">
    <link rel="stylesheet" href="/static/js/skins/lightgray/content.min.css ">
+   <link rel="stylesheet" href="/static/css/cropper.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 </head>
@@ -43,13 +44,13 @@
 					</div>
 				</div>
 				<div class="pull-left user-details">
-					<a href="/login" class="profile-name">Lonny</a>
+					<a href="/login" class="profile-name">{{.userSession.Firstname}}</a>
 					<span class="separator-topbar"></span>
 					<a href="#" class="home-topbar">Home</a>
 				</div>
 				<div class="pull-left user-notifications">
 					<a href="#" class="notification-btn">
-						<span class="notifications-count">3</span>
+						<span class="notifications-count hidden"></span>
 					</a>
 					<a href="#" class="settings-btn">
 						<span class="arrow-down"></span>

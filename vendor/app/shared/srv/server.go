@@ -8,6 +8,7 @@ import(
 	"app/route"
 	//"app/shared/general"
 	"app/shared/websockets"
+	"github.com/kataras/iris/websocket"
 	"app/config"
 	//"app/model"
 	"app/model"
@@ -16,20 +17,27 @@ import(
 	"app/shared/db"
 	"encoding/gob"
 	"gopkg.in/mgo.v2/bson"
+	//"fmt"
 )
+
 
 var (
 	app *iris.Application
 )
 
-func KazeliApp() *iris.Application {
+func init() {
 	gob.Register(model.User{})
+	gob.Register(model.Business{})
+}
+
+func KazeliApp() *iris.Application {
+	
 	app = iris.New()
 	//app.Use(model.IsAuth)
 	
-	 app.Use(func(ctx context.Context) {
+	
+	app.Use(func(ctx context.Context) {
 		session := db.Sessions.Start(ctx)
-	    ctx.Gzip(true)
 		auth := false
 		if session.Get("userAuth") != nil {
 			auth = true
@@ -41,15 +49,28 @@ func KazeliApp() *iris.Application {
 			userSession = session.Get("user").(model.User)
 		}
 		ctx.ViewData("userSession", userSession)
+		
+		if ctx.Path() != "/userchat" {
+			ctx.Gzip(false)
+		}
 		ctx.Next()
 	})
 	
 	
+	route.Routes(app)
+
 	ws := websockets.WebsocketInit()
+
 	ws.OnConnection(websockets.UserChat)
 	app.Get("/userchat", ws.Handler())
-	tmpl := iris.HTML("./templates", ".html")/*.Binary(general.Asset, general.AssetNames)*/.Layout("layouts/default.html")
-	tmpl.Reload(false)
+	app.Any("/iris-ws.js", func(ctx context.Context) {
+		ctx.Write(websocket.ClientSource)
+	})
+		
+	
+	
+	tmpl := iris.HTML(config.GetAppPath()+"templates", ".html")/*.Binary(general.Asset, general.AssetNames)*/.Layout("layouts/default.html")
+	tmpl.Reload(true)
 	app.RegisterView(tmpl)
 	app.StaticWeb("/static", config.GetAppPath()+"resources")
 	tmpl.AddFunc("getRatio", func(val string) string {
@@ -99,12 +120,10 @@ func KazeliApp() *iris.Application {
 	
 	 
 	
-	route.Routes(app)
 	
-	app.OnErrorCode(404, func(ctx context.Context) {
+	 app.OnErrorCode(404, func(ctx context.Context) {
 	 	ctx.Writef("My Custom 404 error page ")
 	 })
-	 
 	
 	
 	iris.RegisterOnInterrupt(func() {

@@ -577,8 +577,8 @@ vertical-align:top;
 	padding:9px;
 	background-color:#f6f7f9;
 	border:1px solid #dde0e5;
-	width:220px;
-	height:146px;
+	width:180px;
+	height:180px;
 	overflow:hidden;
 	background-color: #f6f7f9;
     outline: 1px solid #dde0e5;
@@ -669,7 +669,7 @@ vertical-align:top;
 .dropzone .dz-preview .dz-remove:hover {
 	text-decoration:none!important;
 }
-.dz-image-preview:hover .dz-remove {
+.dz-preview:hover .dz-remove {
 	display:block!important;
 }
 .dropzone {
@@ -679,7 +679,7 @@ vertical-align:top;
 	min-height:344px;
 }
 #coverUpload, #profileUpload {
-	min-height:192px;
+	min-height:242px;
 }
 .dropzone .dz-preview .dz-image {
 	border-radius: 0!important;
@@ -703,4 +703,49 @@ vertical-align:top;
 }
 .phonePrefixC .select2-container {
 	width:100%!important;
+}
+.dropzone .dz-preview .dz-remove:before {
+    font-family: fontawesome;
+    content: "\f00d ";
+    text-align: center;
+}
+.phoneVerificationIcon {
+	font-size: 50px!important;
+    border: 1px solid #000;
+    border-radius: 50%;
+    padding: 6px 20px;
+}
+.categFilterList li a:before, .verifiedBtn:before, .choose_categoryBtn:before {
+	font-family: FontAwesome;
+    content: "\f096";
+    position: absolute;
+    left: 0;
+    font-size: 16px;
+}
+.categFilterList li a, .verifiedBtn, .choose_categoryBtn {
+	padding-left: 20px;
+    position: relative;
+}
+.categFilterList li a.active:before, .categFilterList li a:hover:before {
+    content: "\f046";
+}
+.verifiedBtn:before {
+    content: "\f10c";
+}
+.verifiedBtn.active:before, .verifiedBtn:hover:before {
+    content: "\f192";
+}
+.categFilterList li a.view_all:before {
+	display:none;
+}
+.choose_categoryBtn:before {
+	content: "\f055";
+}
+.choose_categoryContainer, .filterCateg {
+	margin-bottom:15px;
+}
+.editPhotoTitle {
+	background: #333;
+    color: #fff;
+    padding: 10px 15px;
 }

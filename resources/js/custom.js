@@ -1,6 +1,34 @@
 var btnContinue;
+var socket = new Ws("ws://bunity.com:8081/userchat");
+	/*socket.OnConnect(function () {
+		console.log("emit");
+		socket.Emit("chat", "muie");
+	});
+	
+	socket.On("chat", function (msg) {
+		console.log("on");
+	});
+	
+	socket.OnDisconnect(function () {
+		console.log("disconnect");
+	});*/
+	socket.On("like", function (msg) {
+		$(".notifications-count").removeClass("hidden").text(1);
+		$.notify({
+			// options
+			message: 'Someone liked your page!' 
+		},{
+			// settings
+			type: 'info',
+			placement: {
+				from: 'bottom',
+				align: 'left'
+			}
+		});
+
+	});
 $(document).ready(function() {
-	Dropzone.prototype.defaultOptions.dictRemoveFile = "X";
+	Dropzone.prototype.defaultOptions.dictRemoveFile = "";
 	//$.fn.select2.defaults.set("theme", "classic");
 	$('.businessCountry, .businessStateUsa, .businessStateCanada, .businessStateAustralia, .businessIndustry').select2();
 	
@@ -107,7 +135,6 @@ $(document).ready(function() {
 				thumbnailUrls=[];
 				profileThumbnailUrls=[];
 				coverThumbnailUrls=[];
-				console.log(thumbnailUrls);
 				
 				if(data.galleryImages) {
 					for (var i = 0; i < data.galleryImages.length; i++) {
@@ -127,11 +154,11 @@ $(document).ready(function() {
 					}
 				}
 				if(actionType == "gallery") {
-					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Gallery Photos</div><div class="editPhotoSubTitle">Choose up to 8 photos you\'d like to feature.</div><div id="galleryUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox" style="clear:both;"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div>');
+					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Gallery Photos</div><div class="editPhotoSubTitle">Choose up to 8 photos you\'d like to feature.</div><div id="galleryUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox" style="clear:both;"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div></div>');
 				} else if(actionType == "profile") {
-					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Cover Photo</div><div class="editPhotoSubTitle">Choose 1 photo you\'d like to feature.</div><div id="profileUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div>');
+					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Profile Photo</div><div class="editPhotoSubTitle">Choose 1 photo you\'d like to feature.</div><div id="profileUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div></div>');
 				} else if(actionType == "cover") {
-					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Profile Photo</div><div class="editPhotoSubTitle">Choose 1 photo you\'d like to feature.</div><div id="coverUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div>');
+					$('#imageUploadContainer').html('<button data-fancybox-close="" class="fancybox-close-small" title="Close"></button><div class="editPhotoTitle">Edit Cover Photo</div><div class="editPhotoSubTitle">Choose 1 photo you\'d like to feature.</div><div id="coverUpload" class="dropzone"><div class="dz-default dz-message"><div class="dropzoneBox"><i class="fa fa-camera" aria-hidden="true"></i></div></div></div>');
 				}
 				galleryUploadFunc();
 		}, "json")
@@ -181,6 +208,9 @@ $(document).ready(function() {
 					if(data.success === true) {
 						liked = true;
 						thisbtn.addClass("liked");
+						socket.OnConnect(function () {
+							socket.Emit("like", userID);
+						});
 					} else {
 						liked = false;
 						thisbtn.removeClass("liked");
@@ -254,22 +284,72 @@ $(document).ready(function() {
 		{
 			$('.searchResults').hide();
 		}
+		if(!$(".filterCateg").is(e.target) && !$(".choose_categoryBtn").is(e.target)) {
+			$(".choose_categoryBtn").show();
+			$(".filterCateg").addClass("hidden");
+			$(".filterCateg").val('');
+			$(".categFilterList li").removeAttr("style");
+		}
 	});
 	
+	var currentRequest = null; 
 	var headSearch = $(".headSearch");
+	//var timeoutId2;
+	
+	
 	headSearch.on("keyup focus",function() {
+		
 		var str = headSearch.val();
 		$(".searchResults").html('<ul class="list-unstyled"><li>'+str.toLowerCase()+'</li></ul><div class="searchLoad">FINDING RESULTS <img color="white" src="/static/images/LOOn0JtHNzb.gif" class="img" alt="" width="16" height="16"></div>');
+		var strArr = str.split(" ");
+		var tempStr = 0;
+		for(var i=0; i< strArr.length; i++) {
+			if(strArr[i].length > tempStr) {
+				tempStr = strArr[i].length;
+			}
+		}
+		if(tempStr >= 3) {
 		
-		console.log(str);
-		$.post( "/livesearch", {"keyword":str},
+		
+			//clearTimeout(timeoutId2);
+			//timeoutId2 = setTimeout(function() {
+			
+			currentRequest = $.ajax({
+			type:"POST",
+			url:"/livesearch",
+			data: {"keyword":str},
+			beforeSend : function()    {       
+				if(currentRequest != null) {
+					currentRequest.abort();
+					console.log(1);
+				}
+			},
+			success: function(data) {
+				console.log("succeess");
+			    if(data.results.length > 0) {
+					var html = '<ul class="list-unstyled">';
+					for(var i=0;i<data.results.length;i++) {
+						var strL = str.toLowerCase();
+						var n = data.results[i].Name.replace(strL/*new RegExp(strL, 'g')*/, "<strong>"+strL+"</strong>");
+						var b = data.results[i];
+						html += '<li class=""><a href="/'+data.results[i].Url+'"><div class="pull-left imgLiveSearch"><img src="/static/uploads/'+b.UserId+'/'+b.Url+'/profile/'+b.Image[0]+'"></div><div class="liveSearchRIght"><div>'+n+'</div><div><small class="liveSearchCat">'+b.Industry+'</small></div></div></a></li>';
+					}
+					html += '</ul>';
+				} else {
+					$(".searchLoad").remove();
+				}
+				$(".searchResults").html(html).show();
+			},
+			dataType: 'json',
+		  });
+		//}, 400);
+		/*$.post( "/livesearch", {"keyword":str},
 		function( data ) {
-			console.log(data.results);
 			if(data.results.length > 0) {
 				var html = '<ul class="list-unstyled">';
 				for(var i=0;i<data.results.length;i++) {
 					var strL = str.toLowerCase();
-					var n = data.results[i].Name.replace(strL/*new RegExp(strL, 'g')*/, "<strong>"+strL+"</strong>");
+					var n = data.results[i].Name.replace(strL/*new RegExp(strL, 'g')*//*, "<strong>"+strL+"</strong>");
 					var b = data.results[i];
 					html += '<li class=""><a href="/'+data.results[i].Url+'"><div class="pull-left imgLiveSearch"><img src="/static/uploads/'+b.UserId+'/'+b.Url+'/profile/'+b.Image[0]+'"></div><div class="liveSearchRIght"><div>'+n+'</div><div><small class="liveSearchCat">'+b.Industry+'</small></div></div></a></li>';
 				}
@@ -297,8 +377,12 @@ $(document).ready(function() {
 				msg = 'Uncaught Error.\n' + jqXHR.responseText;
 			}
 			console.log(msg);
-		});
+		});*/
+		} else {
+			$(".searchLoad").remove();
+		}
 	});
+	
 });
 
 
@@ -544,7 +628,7 @@ function galleryUploadFunc() {
 			rmvFile = file.name;
 		}
 		if (rmvFile){
-			console.log(rmvFile);
+			//console.log(rmvFile);
 			$.ajax({
 				type: 'POST',
 				url: '/businesses/deletefile',
@@ -555,28 +639,34 @@ function galleryUploadFunc() {
 			
 			//return (_ref = file.previewElement) != null ? _ref.parentNode.removeChild(file.previewElement) : void 0;   
 		}
-		console.log(this.options.maxFiles);
+		//console.log(this.options.maxFiles);
 	}
 	});
 	
+	var $cropperModal = $(modalTemplate);
 	$("#profileUpload").dropzone({
 		url: "/businesses/addfiles",
 		sending: function(file, xhr, formData){
 			formData.append('imageType', "profile");
             formData.append('businessID', $("#businessID").val());
 			formData.append('imageFormat', file.type);
-			console.log(file.type);
+			//console.log(file.type);
         },
 		addRemoveLinks : true,
-		maxFiles:1,
+		maxFiles:2,
+		maxFilesize: 5,
 		acceptedFiles: ".jpeg,.jpg,.png",
+		autoProcessQueue : false,
+		accept: function(file, done) {
+			if(file.cropped) {
+				done();
+				console.log("hai");
+			}
+			file.acceptDimensions = done;
+            file.rejectDimensions = function(msg) { done(msg); };
+		},
 		init: function() {
-			this.on('addedfile', function(file) {
-				if (this.files.length > 1) {
-				  this.removeFile(this.files[0]);
-				  this.options.maxFiles = 1;
-				}
-			  });
+		
 			var myDropzone = this;
 			if (profileThumbnailUrls) {
 				for (var i = 0; i < profileThumbnailUrls.length; i++) {
@@ -613,16 +703,20 @@ function galleryUploadFunc() {
 		$(".profile-picture").removeClass("landscape portrait").addClass(orientation);
 		$(".profile-picture img").attr("src", serverFileName.url);
 		$.fancybox.close();
+		if(serverFileName.fname) {
+			$cropperModal.modal('hide').remove();
+			$(".modal-backdrop").remove();
+		}
 	},
 	removedfile: function(file) {
 			var rmvFile = "";
-		console.log("delete file length: "+fileList2.length);
+		//console.log("delete file length: "+fileList2.length);
 		if(fileList2.length > 0) {
 		for(f=0;f<fileList2.length;f++){
 
 			if(fileList2[f].fileName == file.name)
 			{
-				console.log("new: "+ fileList2[f].fileName+"old: "+file.name);
+				//console.log("new: "+ fileList2[f].fileName+"old: "+file.name);
 				rmvFile = fileList2[f].serverFileName;
 				fileList2.splice(f,1);
 				//myDropzone.options.maxFiles = myDropzone.options.maxFiles + 1;
@@ -637,7 +731,7 @@ function galleryUploadFunc() {
 		}
 		if (rmvFile){
 			this.options.maxFiles = 1;
-			console.log(rmvFile);
+			//console.log(rmvFile);
 			$.ajax({
 				type: 'POST',
 				url: '/businesses/deletefile',
@@ -648,10 +742,100 @@ function galleryUploadFunc() {
 			
 			//return (_ref = file.previewElement) != null ? _ref.parentNode.removeChild(file.previewElement) : void 0;   
 		}
-		console.log(this.options.maxFiles);
+		//console.log(this.options.maxFiles);
+		},
+	thumbnail: function(file) {
+		if (file.acceptDimensions) {
+			if (file.width < 160 && file.height < 160) {
+				file.rejectDimensions("The resolution has to be at least 160 x 160");
+			}	else {
+				console.log("hai");
+				file.acceptDimensions();
+			}
 		}
+		$(".dz-image img").attr("src",file.url)
+		if(file.accepted) {
+			$.fancybox.close();
+			var myDropzone = this
+			if (file.cropped) {
+				return;
+			}
+			var cachedFilename = file.name;
+			//console.log(file);
+			//myDropzone.removeFile(file);
+		
+			
+			var $uploadCrop = $cropperModal.find('.crop-upload');
+			var $img = $('<img />');
+			var reader = new FileReader();
+			reader.onloadend = function () {
+				$cropperModal.find('.image-container').html($img);
+				$img.attr('src', reader.result);
+				$img.cropper({
+					preview: '.image-preview',
+					aspectRatio: 1 / 1,
+					autoCropArea: 1,
+					movable: false,
+					cropBoxResizable: true,
+					minContainerHeight : 320,
+					minContainerWidth : 568,
+					viewMode:2,
+					minCropBoxHeight: 160,
+					minCropBoxWidth:160
+				});
+			};
+			
+			reader.readAsDataURL(file);		
+			$cropperModal.modal('show');
+				
+			$uploadCrop.on('click', function() {
+				var blob = $img.cropper('getCroppedCanvas').toDataURL();
+				var newFile = dataURItoBlob(blob);
+				newFile.cropped = true;
+				newFile.name = cachedFilename;
+
+				myDropzone.removeAllFiles();
+				myDropzone.options.maxFiles = 1;
+		
+				myDropzone.addFile(newFile);
+				
+				myDropzone.processQueue();
+				
+				
+			});
+			 var $this = $(document);
+			$this.on('click', '.rotate-right', function () {
+                $img.cropper('rotate', 45);
+            })
+            .on('click', '.rotate-left', function () {
+                $img.cropper('rotate', -45);
+            })
+            .on('click', '.reset', function () {
+                $img.cropper('reset');
+            })
+            .on('click', '.scale-x', function () {
+                var $this = $(this);
+                $img.cropper('scaleX', $this.data('value'));
+                $this.data('value', -$this.data('value'));
+            })
+            .on('click', '.scale-y', function () {
+                var $this = $(this);
+                $img.cropper('scaleY', $this.data('value'));
+                $this.data('value', -$this.data('value'));
+            })
+			
+			.on('click', '.zoom-in', function () {
+				$img.cropper('zoom', -0.1);
+            })
+			
+			.on('click', '.zoom-out', function () {
+                $img.cropper('zoom', 0.1);
+            });
+		}
+	}
 	});
 	
+
 	$("#coverUpload").dropzone({
 		url: "/businesses/addfiles",
 		sending: function(file, xhr, formData){
@@ -661,16 +845,17 @@ function galleryUploadFunc() {
 			console.log(file.type);
         },
 		addRemoveLinks : true,
-		maxFiles:1,
+		maxFiles:2,
+		autoProcessQueue : false,
+		accept: function(file, done) {
+			if(file.cropped) {
+				done();
+			}
+			file.acceptDimensions = done;
+            file.rejectDimensions = function(msg) { done(msg); };
+		},
 		acceptedFiles: ".jpeg,.jpg,.png",
 		init: function() {
-			this.on('addedfile', function(file) {
-				console.log(this.files.length);
-				if (this.files.length > 1) {
-				  this.removeFile(this.files[0]);
-				  this.options.maxFiles = 1;
-				}
-			  });
 			var myDropzone = this;
 			if (coverThumbnailUrls) {
 				for (var i = 0; i < coverThumbnailUrls.length; i++) {
@@ -701,11 +886,13 @@ function galleryUploadFunc() {
 		fileList3.push ({"serverFileName" : serverFileName.fname, "fileName" : file.name});
 		$(".head-banner img").attr("src", serverFileName.url);
 		$.fancybox.close();
+		if(serverFileName.fname) {
+			$cropperModal.modal('hide').remove();
+			$(".modal-backdrop").remove();
+		}
 	},
 	removedfile: function(file) {
-
-			var rmvFile = "";
-		console.log("delete file length: "+fileList3.length);
+		var rmvFile = "";
 		if(fileList3.length > 0) {
 		for(f=0;f<fileList3.length;f++){
 
@@ -738,7 +925,95 @@ function galleryUploadFunc() {
 			//return (_ref = file.previewElement) != null ? _ref.parentNode.removeChild(file.previewElement) : void 0;   
 		}
 		console.log(this.options.maxFiles);
+	},
+	thumbnail: function(file) {
+		if (file.acceptDimensions) {
+			if (file.width < 840 && file.height < 285) {
+				file.rejectDimensions("The resolution has to be at least 840 x 285");
+			}	else {
+				file.acceptDimensions();
+			}
 		}
+		$(".dz-image img").attr("src",file.url)
+		if(file.accepted) {
+			$.fancybox.close();
+			var myDropzone = this
+			if (file.cropped) {
+				return;
+			}
+			var cachedFilename = file.name;
+			//console.log(file);
+			//myDropzone.removeFile(file);
+		
+			
+			var $uploadCrop = $cropperModal.find('.crop-upload');
+			$cropperModal.find(".zoom-in, .zoom-out").remove();
+			var $img = $('<img />');
+			var reader = new FileReader();
+			reader.onloadend = function () {
+				$cropperModal.find('.image-container').html($img);
+				$img.attr('src', reader.result);
+				$img.cropper({
+					preview: '.image-preview',
+					aspectRatio: 35  / 12,
+					autoCropArea: 1,
+					movable: false,
+					cropBoxResizable: true,
+					minContainerHeight : 320,
+					minContainerWidth : 568,
+					viewMode:2,
+					cropBoxResizable: false
+				});
+			};
+			
+			reader.readAsDataURL(file);		
+			$cropperModal.modal('show');
+				
+			$uploadCrop.on('click', function() {
+				var blob = $img.cropper('getCroppedCanvas').toDataURL();
+				var newFile = dataURItoBlob(blob);
+				newFile.cropped = true;
+				newFile.name = cachedFilename;
+
+				  myDropzone.removeAllFiles();
+				  myDropzone.options.maxFiles = 1;
+		
+				console.log(myDropzone.files);
+				myDropzone.addFile(newFile);
+				myDropzone.processQueue();
+				
+				
+			});
+			 var $this = $(document);
+			$this.on('click', '.rotate-right', function () {
+                $img.cropper('rotate', 45);
+            })
+            .on('click', '.rotate-left', function () {
+                $img.cropper('rotate', -45);
+            })
+            .on('click', '.reset', function () {
+                $img.cropper('reset');
+            })
+            .on('click', '.scale-x', function () {
+                var $this = $(this);
+                $img.cropper('scaleX', $this.data('value'));
+                $this.data('value', -$this.data('value'));
+            })
+            .on('click', '.scale-y', function () {
+                var $this = $(this);
+                $img.cropper('scaleY', $this.data('value'));
+                $this.data('value', -$this.data('value'));
+            });
+			
+			/*.on('click', '.zoom-in', function () {
+				$img.cropper('zoom', -0.1);
+            })
+			
+			.on('click', '.zoom-out', function () {
+                $img.cropper('zoom', 0.1);
+            });*/
+		}
+	}
 	});
 }
 
@@ -837,15 +1112,25 @@ function loadBusinessesAjax() {
 }
 
 function searchCartegoryList() {
+	$(".choose_categoryBtn").on("click", function() {
+		$(this).hide();
+		$(".filterCateg").removeClass("hidden");
+		$(".filterCateg")[0].focus();
+	});
+	
+	var liFilter = $('.categFilterList li');
 	$('.filterCateg').on('keyup', function () {
-    var value = this.value;
-    $('.categFilterList li').hide().each(function () {
-		console.log($(this).find("a").text());
-        if ($(this).find("a").text().toLowerCase().search(value.toLowerCase()) > -1) {
-            $(this).attr("style", "display: list-item !important");
-        }
-    });
-});
+		var value = this.value;
+		
+	   liFilter.hide().each(function () {
+			if ($(this).find("a").text().toLowerCase().search(value.toLowerCase()) > -1) {
+				$(this).attr("style", "display: list-item !important");
+			}
+			if (value == "" && !$(this).find("a").hasClass("active")) {
+				 $(this).removeAttr("style");
+			}
+		});
+	});
 }
 
 function formatState (state) {
@@ -854,7 +1139,52 @@ function formatState (state) {
 };
 
 
+var modalTemplate = '' + 
+	'<div class="modal fade" tabindex="-1" role="dialog">' + 
+		'<div class="modal-dialog" role="document">' + 
+			'<div class="modal-content">' + 
+				'<div class="modal-header">' + 
+					'<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + 
+					'<h4 class="modal-title">Crop Image</h4>' + 
+				'</div>' + 						
+				'<div class="modal-body">' + 
+					'<div class="image-container"></div>' + 
+				'</div>' + 						
+				'<div class="modal-footer">' + 
+					'<button type="button" class="btn btn-warning zoom-in"><span class="fa fa-search-minus"></span></button>' +
+					'<button type="button" class="btn btn-warning zoom-out"><span class="fa fa-search-plus"></span></button>' +
+					
+					'<button type="button" class="btn btn-warning rotate-left"><span class="fa fa-rotate-left"></span></button>' +
+					'<button type="button" class="btn btn-warning rotate-right"><span class="fa fa-rotate-right"></span></button>' +
+					'<button type="button" class="btn btn-warning scale-x" data-value="-1"><span class="fa fa-arrows-h"></span></button>' +
+					'<button type="button" class="btn btn-warning scale-y" data-value="-1"><span class="fa fa-arrows-v"></span></button>' +
+					'<button type="button" class="btn btn-warning reset"><span class="fa fa-refresh"></span></button>' +
+					'<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' + 
+					'<button type="button" class="btn btn-primary crop-upload">Upload</button>' + 
+				'</div>' + 
+			'</div>' + 
+		'</div>' + 
+	'</div>' + 
+'';
 
+function dataURItoBlob(dataURI) {
+    var byteString;
+    if (dataURI.split(',')[0].indexOf('base64') >= 0)
+        byteString = atob(dataURI.split(',')[1]);
+    else
+        byteString = unescape(dataURI.split(',')[1]);
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+    // write the bytes of the string to a typed array
+    var ia = new Uint8Array(byteString.length);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ia], {type:mimeString});
+}
 /*var messageTxt;
 var messages;
 $(function () {
