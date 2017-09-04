@@ -4,6 +4,7 @@ import(
 	"github.com/kataras/iris/context"
 	"app/model"
 	"app/shared/db"
+	ses "app/shared/session"
 	"gopkg.in/mgo.v2/bson"
 	"app/shared/social/fb"
 	"app/shared/mail"
@@ -24,7 +25,7 @@ var (
 
 
 func Login(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	auth := session.Get("userAuth")
 	if auth == true {
 		ctx.Redirect("/profile") 

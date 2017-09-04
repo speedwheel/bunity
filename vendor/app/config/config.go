@@ -29,7 +29,7 @@ type user struct {
 }
 
 var mainConfig *AppConfig
-const packagePath = "/src/github.com/speedwheel/kazeli/"
+const packagePath = "/src/github.com/speedwheel/bunity/"
 
 func Init() *AppConfig {
 	if mainConfig == nil {

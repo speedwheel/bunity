@@ -4,6 +4,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/kataras/iris/context"
 	"app/shared/db"
+	"app/shared/session"
 	"log"
 	"html/template"
 	"fmt"
@@ -45,7 +46,7 @@ type (
 		State string `json:"state" bson:"state" form:"state,omitempty" facebook:"-"`
 		City string `json:"city" bson:"city" form:"city,omitempty" facebook:"-"`
 		PostalCode string `json:"postalcode" bson:"postalcode" form:"postalcode,omitempty" facebook:"-"`
-		Website string `json:"IsAuth" bson:"website" form:"website,omitempty" facebook:"-"`
+		Website string `json:"website" bson:"website" form:"website,omitempty" facebook:"-"`
 		Area string `json:"area" bson:"area" form:"area,omitempty" facebook:"-"`
 		Country string `json:"country" bson:"country" form:"country,omitempty" facebook:"-"`
 		Industry string `json:"industry" bson:"industry" form:"industry,omitempty" facebook:"-"`
@@ -90,7 +91,7 @@ type (
 )
 
 func SetUserSession(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := session.Sessions.Start(ctx)
 	//usrInterface := ctx.Get("user")
 	//usr := usrInterface.(*User)
 	session.Set("userAuth", ctx.Values().Get("auth"))
@@ -99,7 +100,7 @@ func SetUserSession(ctx context.Context) {
 
 
 func IsAuthRedirect(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := session.Sessions.Start(ctx)
 	_, err := session.Get("userAuth").(bool)
 	if !err  {
 		ctx.Redirect("/")

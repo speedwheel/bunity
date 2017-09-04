@@ -1,0 +1,9 @@
+td.details-control:before {
+    content: "\f055 ";
+    font-family: fontawesome;
+	font-size:1.2rem;
+}
+td.details-control {
+	text-align:center;
+	cursor: pointer;
+}

@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"app/config"
 	"github.com/kataras/iris/context"
+	"fmt"
 )
 
 
@@ -25,9 +26,11 @@ func CheckLogin(_email string, _pass string, ctx context.Context) {
 	pass := []byte(_pass + SecretKey)
 	err := bcrypt.CompareHashAndPassword(hash, pass)
 	auth := true
-	if err == nil {
+	if err != nil {
 		auth = false
+		result = User{}
 	}
+	fmt.Println(auth)
 	ctx.Values().Set("auth", auth)
 	ctx.Values().Set("user", result)
 	ctx.Next()

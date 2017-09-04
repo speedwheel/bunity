@@ -14,9 +14,11 @@ import(
 	"app/model"
 	"html/template"
 	"strings"
-	"app/shared/db"
+	ses "app/shared/session"
 	"encoding/gob"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/iris-contrib/middleware/cors"
+	"github.com/speedwheel/bunity/admin"
 	//"fmt"
 )
 
@@ -36,8 +38,10 @@ func KazeliApp() *iris.Application {
 	//app.Use(model.IsAuth)
 	
 	
+	
+	
 	app.Use(func(ctx context.Context) {
-		session := db.Sessions.Start(ctx)
+		session := ses.Sessions.Start(ctx)
 		auth := false
 		if session.Get("userAuth") != nil {
 			auth = true
@@ -51,8 +55,9 @@ func KazeliApp() *iris.Application {
 		ctx.ViewData("userSession", userSession)
 		
 		if ctx.Path() != "/userchat" {
-			ctx.Gzip(false)
+			ctx.Gzip(true)
 		}
+		
 		ctx.Next()
 	})
 	
@@ -73,6 +78,7 @@ func KazeliApp() *iris.Application {
 	tmpl.Reload(true)
 	app.RegisterView(tmpl)
 	app.StaticWeb("/static", config.GetAppPath()+"resources")
+	app.StaticWeb("/adminstatic", config.GetAppPath()+"admin/resources")
 	tmpl.AddFunc("getRatio", func(val string) string {
 		newVal := val[len(val)-5:len(val)-4]
 		if newVal == "1" {
@@ -92,6 +98,15 @@ func KazeliApp() *iris.Application {
 	
 	tmpl.AddFunc("sub", func(x, y int) int {
 		return x - y
+	})
+	
+	tmpl.AddFunc("inSlice", func(u []admin.AdminSubItem, p string) bool {
+		for _, i := range u {
+        if i.Url == p {
+            return true
+        }
+    }
+    return false
 	})
 	
 	tmpl.AddFunc("divisible83", func(x int) bool {
@@ -124,6 +139,11 @@ func KazeliApp() *iris.Application {
 	 app.OnErrorCode(404, func(ctx context.Context) {
 	 	ctx.Writef("My Custom 404 error page ")
 	 })
+	 
+	 app.WrapRouter(cors.WrapNext(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+	}))
 	
 	
 	iris.RegisterOnInterrupt(func() {

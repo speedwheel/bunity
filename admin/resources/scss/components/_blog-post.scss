@@ -1,0 +1,115 @@
+// main: ../style.scss
+/********************************
+*********************************
+Blog Post
+*********************************
+*********************************/
+.blog-post {
+  display: inline-block;
+  figure { margin-bottom: 0 }
+  p:last-child { margin-bottom: 0 }
+}
+
+.blog-post-card {
+  background: #fff;
+  overflow: hidden;
+  border-radius: .5rem;
+  border: rem(1) solid $theme-border-color;
+
+  .blog-post-content,
+  footer,
+  header {
+    position: relative;
+    padding-left: em(20);
+    padding-right: em(20);
+  }
+
+  header {
+    padding-top: em(25);
+  }
+
+  .blog-post-share-links {
+    @include position(absolute, 0 null null em(40) );
+    padding-left: em(40);
+    transform: translateY(-50%);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    max-width: 0;
+    height: em(40);
+
+    > li {
+      padding: 0;
+      padding-left: em(10);
+      margin-right: 0;
+      height: em(40);
+      transition: all 0.3s ease;
+      transition-delay: 0s;
+
+      &:first-child {
+        padding-left: 0;
+        @include position(absolute, 0 null null 0);
+        z-index: 2;
+      }
+
+      &:not(:first-child) {
+        opacity: 0;
+        transform: translateX(rem(-20)) rotate(0deg);
+      }
+    }
+
+    &.active,
+    &:hover {
+      max-width: rem(900);
+      > li:not(:first-child) {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      li:first-child {
+        transform: rotate(360deg);
+      }
+      li {
+        @for $i from 1 through 10 {
+          &:nth-child(#{$i}) {
+            transition-delay: #{0.05*$i}s;
+          }
+        }
+      }
+    }
+    a {
+      display: inline-block;
+      color: #fff;
+      @include size(em(40));
+      text-align: center;
+      border-radius: rem(100);
+      i {
+        line-height: em(40,30);
+        font-size: em(30);
+      }
+    }
+  }
+
+  .blog-post-title {
+    margin: em(10) 0 em(20);
+    a {
+      color: $body-color;
+      &:focus,
+      &:hover {
+        color: $color-scheme;
+      }
+    }
+  }
+
+  .blog-post-tags {
+    font-size: 0.9em;
+    ul {
+      margin-left: 0;
+    }
+    ul > li {
+      padding: 0;
+      &:after { content: ',' }
+      &:last-child:after { content: '' }
+    }
+  }
+
+  footer { padding-bottom: em(40) }
+}

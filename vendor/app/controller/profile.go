@@ -4,6 +4,7 @@ import(
 	"github.com/kataras/iris/context"
 	"app/model"
 	"app/shared/db"
+	ses "app/shared/session"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"github.com/logpacker/PayPal-Go-SDK"
@@ -65,7 +66,7 @@ var (
 
 
 func Profile(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	ctx.Next()
 	ctx.ViewData("user", session.Get("user"))
 	ctx.View("profile.html")
@@ -73,7 +74,7 @@ func Profile(ctx context.Context) {
 }
 
 func UsersEdit(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	ctx.ViewData("user", session.Get("user"))
 	ctx.View("users_edit.html")
 }
@@ -81,7 +82,7 @@ func UsersEdit(ctx context.Context) {
 func UsersEditUpdate (ctx context.Context) {
 	Db := db.MgoDb{}
 	Db.Init()
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	userSession := session.Get("user").(model.User)
 	userSession.Firstname = ctx.FormValue("firstname")
 	userSession.Lastname = ctx.FormValue("lastname")
@@ -121,7 +122,7 @@ func PaymentMethods(ctx context.Context) {
 }
 
 func BusinessList(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	userSession := session.Get("user").(model.User)
 	business := model.GetAllBusinessByUser(userSession.Id)
 	ctx.ViewData("business", business)
@@ -129,7 +130,7 @@ func BusinessList(ctx context.Context) {
 }
 
 func BusinessAddStep1(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	business := model.Business{}
 	businessSession := session.Get("businessForm")
 	if ctx.Params().Get("businessID") != "" {
@@ -150,7 +151,7 @@ func BusinessAddStep1(ctx context.Context) {
 }
 
 func BusinessAddStep11(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	business := model.Business{}
 	businessSession := session.Get("businessForm")
 	if ctx.Params().Get("businessID") != "" {
@@ -201,7 +202,7 @@ func BusinessAddPost(ctx context.Context) {
 }
 
 func BusinessAddStep2(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	business := model.Business{}
 	businessSession := session.Get("businessForm")
 	if ctx.Params().Get("businessID") != "" {
@@ -233,7 +234,7 @@ func BusinessAddStep2(ctx context.Context) {
 }
 
 func BusinessAddStep22(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	business := model.Business{}
 	businessSession := session.Get("businessForm")
 	if ctx.Params().Get("businessID") != "" {
@@ -261,7 +262,7 @@ func BusinessAddStep22(ctx context.Context) {
 }
 
 func BusinessAddStep3(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	business := model.Business{}
 	businessSession := session.Get("businessForm")
 	if ctx.Params().Get("businessID") != "" {
@@ -279,7 +280,7 @@ func BusinessAddStep3(ctx context.Context) {
 }
 
 func BusinessAddStep4(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	business := model.Business{}
 	businessSession := session.Get("businessForm")
 	if ctx.Params().Get("businessID") != "" {
@@ -297,7 +298,7 @@ func BusinessAddStep4(ctx context.Context) {
 }
 
 func BusinessAddStep5(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	//business := model.Business{}
 	userSession := session.Get("user").(model.User)
 	businessSession := session.Get("businessForm")
@@ -329,7 +330,7 @@ func BusinessAddStep5(ctx context.Context) {
 }
 
 func BusinessAddStep6(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	//userSession := session.Get("user").(model.User)
 	businessSession := session.Get("businessForm")
 	if ctx.Params().Get("businessID") != "" {
@@ -354,7 +355,7 @@ func BusinessAddStep6(ctx context.Context) {
 }
 
 func BusinessAddStep7(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	//userSession := session.Get("user").(model.User)
 	businessSession := session.Get("businessForm")
 	if ctx.Params().Get("businessID") != "" {
@@ -370,7 +371,7 @@ func BusinessAddStep7(ctx context.Context) {
 }
 
 func BusinessDelete(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	userSession := session.Get("user").(model.User)
 	if ctx.Method() == "GET" {
 		businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
@@ -400,7 +401,7 @@ func BusinessDelete(ctx context.Context) {
 
 
 func BusinessEventsTracker(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	var mapAddress = ""
 	business := model.Business{}
 	businessSession := session.Get("businessForm")
@@ -609,7 +610,7 @@ func splitWord() {
 
 
 func BusinessAddFinish(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	businessSession := session.Get("businessForm")
 	business := model.Business{}
 	if businessSession != nil {
@@ -647,7 +648,7 @@ func BusinessAddFinish(ctx context.Context) {
 func UploadFiles(ctx context.Context) {
 	var image image.Image
 	var resizeWidth int
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	var folder string
 	if ctx.FormValue("imageType") == "gallery" {
 		folder = "gallery"
@@ -746,7 +747,7 @@ func UploadFiles(ctx context.Context) {
 	ctx.JSON(map[string]interface{}{"fname": fname, "url": "/static/uploads/"+userSession.Id.Hex()+"/"+ctx.FormValue("businessID")+"/"+folder+"/"+fname})
 }
 func DeleteFile(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	var folder string
 	if ctx.FormValue("imageType") == "gallery" {
 		folder = "gallery"
@@ -771,7 +772,7 @@ func DeleteFile(ctx context.Context) {
 }
 
 func SendSms(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	userSession := session.Get("user").(model.User)
 	business := model.Business{}
 	phoneSms := ctx.FormValue("smsCode")
@@ -814,7 +815,7 @@ func SendSms(ctx context.Context) {
 }
 
 func VerifyCode(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	business := model.User{}	
 	verificationCode := ctx.FormValue("verificationCode")
 	userSession := session.Get("user").(model.User)
@@ -845,7 +846,7 @@ func BusinessProfilePage(ctx context.Context) {
 		return
 	}
 	
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	userSessionC := session.Get("user")
 	if userSessionC != nil {	
 		userSession := session.Get("user").(model.User)
@@ -983,7 +984,7 @@ func BusinessProfileInternal(ctx context.Context) {
 func BusinessLike(ctx context.Context) {
 	liked := false
 	businessID := bson.ObjectIdHex(ctx.Params().Get("businessID"))
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	userSession := session.Get("user").(model.User)
 	Db := db.MgoDb{}
 	Db.Init()
@@ -1043,7 +1044,7 @@ func LiveSearch(ctx context.Context) {
 	
 	auth := ctx.Values().Get("auth").(bool)
 	if auth  {
-		session := db.Sessions.Start(ctx)
+		session := ses.Sessions.Start(ctx)
 		userSession := session.Get("user").(model.User)
 		query["likes"] = userSession.Id
 	}
@@ -1137,7 +1138,7 @@ func BusinessSearch(ctx context.Context) {
 	var businessExclude []bson.M
 	auth := ctx.Values().Get("auth").(bool)
 	if auth  {
-		session := db.Sessions.Start(ctx)
+		session := ses.Sessions.Start(ctx)
 		userSession := session.Get("user").(model.User)
 		query["likes"] = userSession.Id
 		//liked := userSession.Liked

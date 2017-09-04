@@ -30,7 +30,7 @@ var socket = new Ws("ws://bunity.com:8081/userchat");
 $(document).ready(function() {
 	Dropzone.prototype.defaultOptions.dictRemoveFile = "";
 	//$.fn.select2.defaults.set("theme", "classic");
-	$('.businessCountry, .businessStateUsa, .businessStateCanada, .businessStateAustralia, .businessIndustry').select2();
+	$('.businessCountry, .businessStateUsa, .businessStateCanada, .businessStateAustralia, .businessIndustry, .businessCateg2').select2();
 	
 	$('.phonePrefix').select2({
 		templateSelection: formatState,

@@ -2,11 +2,11 @@ package general
 
 import (
 	"github.com/kataras/iris/context"
-	"app/shared/db"
+	ses "app/shared/session"
 )
 
 func Auth(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	auth := session.Get("userAuth")
 	if auth == false || auth == nil {
 		ctx.Redirect("/")
@@ -14,8 +14,8 @@ func Auth(ctx context.Context) {
 }
 
 func Logout(ctx context.Context) {
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	session.Clear()
-	db.Sessions.Destroy(ctx)
+	ses.Sessions.Destroy(ctx)
 	ctx.Redirect("/")
 }

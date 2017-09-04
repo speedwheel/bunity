@@ -5,7 +5,7 @@ import (
 	"github.com/kataras/iris/websocket"
 	"sync"
 	"app/model"
-	"app/shared/db"
+	ses "app/shared/session"
 	//"time"
 )
 
@@ -16,7 +16,7 @@ var (
 
 func UserChat(c websocket.Connection) {
 	ctx := c.Context()
-	session := db.Sessions.Start(ctx)
+	session := ses.Sessions.Start(ctx)
 	userSession := session.Get("user").(model.User)
 	mutex.Lock()
 	Conn[c] = userSession.Id.Hex()

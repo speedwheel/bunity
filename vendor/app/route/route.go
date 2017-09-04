@@ -5,7 +5,9 @@ import(
 	"app/controller"
 	"app/model"
 	"app/shared/general"
-	"github.com/kataras/iris/context"
+	"github.com/speedwheel/bunity/admin/user"
+	"app/shared/session"
+	"github.com/speedwheel/bunity/admin"
 )
 
 
@@ -75,10 +77,14 @@ func Routes(app *iris.Application) {
 	
 	businesses.Post("/updatephotos", controller.UpdatePhotos)
 	
-	dashboard := app.Party("office.")
+	
+	office := app.Party("office.", func(ctx iris.Context ) {
+		adminMenu := admin.NewAdminMenu()
+		ctx.ViewData("AdminMenu", adminMenu)
+		ctx.Next()
+	}).Layout("admin/layouts/default.html")
 	{
-		dashboard.Get("/", func(ctx context.Context) {
-			ctx.Writef("HEY FROM the dashboard")
-		})
+		users := user.NewDataSource()
+		office.Controller("/", new(user.Controller), session.Sessions, users)
 	}
 }
