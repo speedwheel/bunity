@@ -2156,23 +2156,74 @@
   $(document).ready( function() {
     Custom.init();
 	UserListTable();
-	BusinessesListTable();
+	//BusinessesListTable();
 	
 	
   });
 })(jQuery);
 
+
 function UserListTable() {
+	var showKey = "showBusinesses";
+	var detailRows = [];
 	var $userListTable = $('#userListTable');
+	
+	//init table
 	var dt = $userListTable.DataTable( {
         "processing": true,
 		"serverSide": true,
 		"responsive": true,
-		"stateSave": true,
+		"autoWidth": false,
+		"stateSave": false,
 		"aaSorting": [[1, "asc"]],
         "ajax": "/userlist",
 		"iDisplayLength": 5,
 		"lengthMenu": [ [5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, "All"] ],
+		"rowId": function(b) {
+			  return b.id;
+		},
+		/*'createdRow': function( row, data, dataIndex ) {
+				$(row).attr('data-id', data.id);
+		},*/
+		/*"dom": "<'row'<'col-sm-3'l><'col-sm-6 text-left'B><'col-sm-3'f>>" +
+    "<'row'<'col-sm-12'tr>>" +
+    "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+		"buttons": [
+            {
+                text: ' Show Businesses',
+				className: "hideShowBtn",
+                action: function ( e, dt, node, config ) {
+					var showBusinesses;
+					
+					if (typeof(Storage) !== "undefined") {
+						if (sessionStorage.getItem(showKey) == "true") {
+							sessionStorage.setItem(showKey, false);
+						} else {
+							sessionStorage.setItem(showKey, true);
+						}
+						showBusinesses = sessionStorage.getItem(showKey);
+						var hideShow = $(".hideShowBtn");
+						dt.rows().every( function () {
+							var row = this;
+							var rowData = this.data();
+							if(rowData.Business.length > 0) {
+								if(showBusinesses == "true") {
+									row.child.show();
+									hideShow.addClass("showBusiness");
+									hideShow.find("span").text(" Hide Businesses");
+									$("#"+rowData.id).addClass( 'details' );
+								} else {
+									row.child.hide();
+									hideShow.removeClass("showBusiness");
+									hideShow.find("span").text(" Show Businesses");
+									$("#"+rowData.id).removeClass( 'details' );
+								}
+							}
+						});
+					}
+                }
+            }
+        ],*/
 		"columns": [
 			{
                 "class":          "details-control",
@@ -2185,34 +2236,51 @@ function UserListTable() {
 			{ "name": "firstname", "data": "firstname" },
 			{ "name": "lastname", "data": "lastname" },
 			{ "name": "email", "data": "email" },
+			{
+                "class":          "actionBtns",
+                "orderable":      false,
+                "data":           null,
+                "defaultContent": '<div class="btn-group btn-group-sm actionBtns">'+
+									'<button type="button" class="userEditBtn btn btn-sm btn-default"><i class="fa fa-pencil" aria-hidden="true"></i></button>' +
+									'<button type="button" class="userDeleteBtn btn btn-sm btn-default"><i class="fa fa-trash" aria-hidden="true"></i></button>' +
+									
+									'</div>',
+				"width": "80"
+            },
 		],
 		"drawCallback": function () {
-			var api = this.api();
-			var trData = api.data();
-			var nr = 1;
-			for (var i = 0; i < trData.length; i++) {
-				if(trData[i].businesses.length < 1) {
-					nr = i + 1;
-					$userListTable.find("tr:eq("+nr+") .details-control").removeClass("details-control");
+			dt.rows().every( function () {
+				var rowS = this;
+				var rowData = this.data();
+				var hideShow = $(".hideShowBtn");
+				if(rowData.Business.length < 1) {
+					
+					$userListTable.find("#"+rowData.id+" .details-control").removeClass("details-control");
+				} else {
+					//show by default all the businesses expanded
+					rowS.child( format( rowData ) );
+					if (sessionStorage.getItem(showKey) == "true") {
+						$("#"+rowData.id).addClass( 'details' );
+						hideShow.addClass("showBusiness");
+						rowS.child.show();
+					} else {
+						rowS.child.hide();
+					}
+					
+					
 				}
-			}
+			});
 		}		
         //"deferLoading": 57
     });
 	
-	setTimeout(function() {	
-		localStorage.clear()
-		dt.state.clear();
-	dt.draw();
-		}, 
-	1000)
 
 	
-	var detailRows = [];
-	
+	//expand business button
 	$userListTable.on( 'click', 'tr td.details-control', function () {
         var tr = $(this).closest('tr');
         var row = dt.row( tr );
+		
         var idx = $.inArray( tr.attr('id'), detailRows );
  
         if ( row.child.isShown() ) {
@@ -2224,7 +2292,7 @@ function UserListTable() {
         }
         else {
             tr.addClass( 'details' );
-            row.child( format( row.data() ) ).show();
+            row.child.show();
  
             // Add to the 'open' array
             if ( idx === -1 ) {
@@ -2233,40 +2301,320 @@ function UserListTable() {
         }
     });
 	
+	//trigger click when chainging view
 	dt.on( 'draw', function () {
         $.each( detailRows, function ( i, id ) {
             $('#'+id+' td.details-control').trigger( 'click' );
         } );
     } );
+	
+	
+	var bizID;
+	var userID;
+	
+	//deleteBusiness
+	$("#userListTable").on("click", ".businessDeleteBtn", function() {
+		userID = $(this).parents('tr').last().prev().attr("id");
+		bizID = $(this).closest('tr').data("id");
+		$('.popupContainer').html(confirmDeleteModal);
+		var bName = $(this).closest('tr').find(".tdBusinessName").text();
+		$(".deleteBusinessName strong").text(bName);
+		
+		$('.confirmDeleteModal').modal();
+	});
+	
+	$(".popupContainer").on("click", ".confirmBDelete", function() {
+		$.ajax({
+			type:"DELETE",
+			url:"/business/"+bizID, //+"/"+bizID,
+			success: function(data) {
+				if (data.success === true) {
+					dt.ajax.reload();
+					$('.confirmDeleteModal').modal("hide");
+				}
+			},
+			dataType: 'json',
+		  });
+	});
+	
+	
+	//hide modal event
+	$(".popupContainer").on('hidden.bs.modal', '.modal', function (e) {
+		$(this).remove();
+	})
+	
+	//business edit action
+	
+	$("#userListTable").on("click", ".businessEditBtn", function() {
+		//$(".businessEditModal").remove();
+		$('.popupContainer').html(businessEditModal);
+		
+		bizID = $(this).closest('tr').data("id");
+		userID = $(this).parents('tr').last().prev().attr("id");
+		$.ajax({
+			type:"GET",
+			url:"/business/"+bizID,
+			success: function(data) {
+				var b = data.business;
+				$("#businessEditModalLabel span").text(b.name);
+				$(".businessName").val(b.name);
+				$(".businessPhone").val(b.phone);
+				$(".businessCountry").val(b.country);
+				$(".businessState").val(b.state);
+				$(".businessArea").val(b.area);
+				$(".businessCity").val(b.city);
+				$(".businessAddress").val(b.address);
+				$('.businessEditModal').modal();
+			},
+			dataType: 'json',
+		  });
+	})
+	
+	//business update event
+	$(".popupContainer").on("click", ".businessUpdate", function() {
+		var formSelector = $(".editBusinessForm");
+		var b = {};
+		$.each($(formSelector).serializeArray(), function(i, field) {
+			b[field.name] = field.value;
+		});
+		b.userid = userID;
+		$.ajax({
+		type:"POST",
+		url:"/business/"+bizID,
+			data: {b},
+			success: function(data) {
+				dt.ajax.reload();
+			},
+			dataType: 'json',
+		  });
+	});
+	
+	$(".hideShowBtn").on("click", function() {
+	var showBusinesses;
+		if (typeof(Storage) !== "undefined") {
+			if (sessionStorage.getItem(showKey) == "true") {
+				sessionStorage.setItem(showKey, false);
+			} else {
+				sessionStorage.setItem(showKey, true);
+			}
+			showBusinesses = sessionStorage.getItem(showKey);
+			var hideShow = $(".hideShowBtn");
+			dt.rows().every( function () {
+				var row = this;
+				var rowData = this.data();
+				if(rowData.Business.length > 0) {
+					if(showBusinesses == "true") {
+						row.child.show();
+						hideShow.addClass("showBusiness");
+						$("#"+rowData.id).addClass( 'details' );
+					} else {
+						row.child.hide();
+						hideShow.removeClass("showBusiness");
+
+						$("#"+rowData.id).removeClass( 'details' );
+					}
+				}
+			});
+		}
+	});
 }
 
+
+//business 
+var businessEditModal = '<div class="modal fade businessEditModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">'+
+	 '<div class="modal-dialog modal-lg">'+
+		'<div class="modal-content">'+
+			'<div class="modal-header">'+
+				'<h5 class="modal-title" id="businessEditModalLabel">Edit Business (<span></span>)</h5>'+
+			'</div>'+
+			'<div class="modal-body">'+
+				'<form class="editBusinessForm">' +
+					'<div class="tabs">'+
+						'<ul class="nav nav-tabs">'+
+							'<li class="nav-item" aria-expanded="false"><a class="nav-link active" href="#home-tab" data-toggle="tab" aria-expanded="false">Name & Address</a></li>'+
+							'<li class="nav-item"><a class="nav-link" href="#profile-tab" data-toggle="tab" aria-expanded="true">Details</a></li>'+
+							'<li class="nav-item"><a class="nav-link" href="#messages-tab" data-toggle="tab" aria-expanded="false">Description</a></li>'+
+							'<li class="nav-item"><a class="nav-link" href="#settings-tab" data-toggle="tab" aria-expanded="false">Social Accounts</a>'+
+							'<li class="nav-item"><a class="nav-link" href="#images-tab" data-toggle="tab" aria-expanded="false">Images</a></li>'+
+						'</ul>'+
+						'<div class="tab-content">'+
+							'<div class="tab-pane active" id="home-tab" aria-expanded="false">'+
+								'<div class="form-group row">'+
+									'<label for="example-text-input" class="col-2 col-form-label">Business Name</label>'+
+										'<div class="col-10">'+
+											'<input class="form-control businessName" type="text" value="" name="name">'+
+									'</div>'+
+								'</div>'+
+								'<div class="form-group row">'+
+									'<label for="example-text-input" class="col-2 col-form-label">Business Phone</label>'+
+										'<div class="col-10">'+
+											'<input class="form-control businessPhone" type="text" value="" name="phone">'+
+									'</div>'+
+								'</div>'+
+								'<div class="form-group row">'+
+									'<label for="example-text-input" class="col-2 col-form-label">Country</label>'+
+										'<div class="col-10">'+
+											'<input class="form-control businessCountry" type="text" value="" name="country">'+
+									'</div>'+
+								'</div>'+
+								'<div class="form-group row">'+
+									'<label for="example-text-input" class="col-2 col-form-label">Area</label>'+
+										'<div class="col-10">'+
+											'<input class="form-control businessArea" type="text" value="" name="area">'+
+									'</div>'+
+								'</div>'+
+								'<div class="form-group row">'+
+									'<label for="example-text-input" class="col-2 col-form-label">State</label>'+
+										'<div class="col-10">'+
+											'<input class="form-control businessState" type="text" value="" name="state">'+
+									'</div>'+
+								'</div>'+
+								'<div class="form-group row">'+
+									'<label for="example-text-input" class="col-2 col-form-label">City</label>'+
+										'<div class="col-10">'+
+											'<input class="form-control businessCity" type="text" value="" name="city">'+
+									'</div>'+
+								'</div>'+
+								'<div class="form-group row">'+
+									'<label for="example-text-input" class="col-2 col-form-label">Address</label>'+
+										'<div class="col-10">'+
+											'<input class="form-control businessAddress" type="text" value="" name="address">'+
+									'</div>'+
+								'</div>'+
+							'</div>'+
+							'<div class="tab-pane" id="profile-tab" aria-expanded="true">'+
+								
+							'</div>'+
+							'<div class="tab-pane" id="messages-tab" aria-expanded="false">'+
+								
+							'</div>'+
+							'<div class="tab-pane" id="settings-tab" aria-expanded="false">'+
+								
+							'</div>'+
+							'<div class="tab-pane" id="images-tab" aria-expanded="false">'+
+								
+							'</div>'+
+						'</div>'+
+					'</div>'+
+					
+				'</form>' +
+			'</div>'+
+			'<div class="modal-footer">'+
+				'<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>'+
+				'<button type="button" class="btn btn-success businessUpdate">Update</button>'+
+			'</div>'+
+		'</div>'+
+	  '</div>'+
+	'</div>';
+	
+var confirmDeleteModal = '<div class="modal fade confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">'+
+	 '<div class="modal-dialog modal-md">'+
+		'<div class="modal-content">'+
+			'<div class="modal-header">'+
+				'<h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete <span></span></h5>'+
+			'</div>'+
+			'<div class="modal-body">'+
+				'<p class="deleteBusinessName">You are about to delete a business: <strong></strong>, this procedure is irreversible.</p>'+
+				'<p>Do you want to proceed?</p>'+
+			'</div>'+
+			'<div class="modal-footer">'+
+				'<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>'+
+				'<button type="button" class="btn btn-danger confirmBDelete">Delete</button>'+
+			'</div>'+
+		'</div>'+
+	  '</div>'+
+	'</div>';
+	
 function format ( d ) {
-	var b = d.businesses;
-	var html = "";
+	var b = d.Business;
+	var html = '<table><tbody>';
 	for (var i=0; i< b.length; i++) {
-		html += b[i]+"<br>";
+		html += '<tr data-id="'+b[i].id+'"><td class="tdBusinessName">'+b[i].name+'</td><td><div class="btn-group btn-group-sm actionBtns">'+
+									'<button type="button" class="businessEditBtn btn btn-sm btn-default"><i class="fa fa-pencil" aria-hidden="true"></i></button>' +
+									'<button type="button" class="businessDeleteBtn btn btn-sm btn-default"><i class="fa fa-trash" aria-hidden="true"></i></button>' +		
+									'</div></td></tr>';
 	}
+	html += '</tbody></table>';
     return html;
 }
 
-function BusinessesListTable() {
+/*function BusinessesListTable() {
 	var $businessesListTable = $('#businessesListTable');
 	var dt = $businessesListTable.DataTable( {
         "processing": true,
 		"serverSide": true,
 		"responsive": true,
-		"pagingType": "input",
+		//"pagingType": "input",
 		"aaSorting": [[0, "asc"]],
         "ajax": "/businesslist",
 		"iDisplayLength": 5,
 		"lengthMenu": [ [5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, "All"] ],
+		'createdRow': function( row, data, dataIndex ) {
+				$(row).attr('data-id', data.id);
+		},
 		"columns": [
 			{ "name": "name", "data": "name" },
 			{ "name": "phone", "data": "phone" },
 			{ "name": "country", "data": "country" },
 			{ "name": "website", "data": "website" },
+			{
+                "class":          "actionBtns",
+                "orderable":      false,
+                "data":           null,
+                "defaultContent": '<div class="btn-group btn-group-sm actionBtns">'+
+									'<button type="button" class="businessEditBtn btn btn-sm btn-default"><i class="fa fa-pencil" aria-hidden="true"></i></button>' +
+									'<button type="button" class="businessDeleteBtn btn btn-sm btn-default"><i class="fa fa-trash" aria-hidden="true"></i></button>' +
+									'</div>',
+				"width": "80"
+            },
 		]
     });
+	
+	var bizID;
+	$("#userListTable").on("click", ".businessEditBtn", function() {
+		//$(".businessEditModal").remove();
+		$('.popupContainer').html(businessEditModal);
+		
+		bizID = $(this).closest('tr').data("id");
+		$.ajax({
+			type:"GET",
+		url:"/business/"+bizID,
+			data: {"bizID":bizID},
+			success: function(data) {
+				var b = data.business;
+				$("#businessEditModalLabel span").text(b.name);
+				$(".businessName").val(b.name);
+				$(".businessPhone").val(b.phone);
+				$(".businessCountry").val(b.country);
+				$(".businessState").val(b.state);
+				$(".businessArea").val(b.area);
+				$(".businessCity").val(b.city);
+				$(".businessAddress").val(b.address);
+				$('.businessEditModal').modal();
+			},
+			dataType: 'json',
+		  });
+	})
+	
+	$("body").on('hidden.bs.modal', '.businessEditModal', function (e) {
+		$(this).remove();
+	})
+	
+	$("body").on("click", ".businessUpdate", function() {
+		var formSelector = $(".editBusinessForm");
+		var b = {};
+		$.each($(formSelector).serializeArray(), function(i, field) {
+			b[field.name] = field.value;
+		});
+		$.ajax({
+		type:"POST",
+		url:"/business/"+bizID,
+			data: {b},
+			success: function(data) {
+				
+			},
+			dataType: 'json',
+		  });
+	});
 }
-
-
+*/

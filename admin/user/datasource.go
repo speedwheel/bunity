@@ -14,6 +14,7 @@ import(
 const (
 	userCol = "users"
 	businessCol = "businesses"
+	businessCategCol = "categories"
 )
 
 var (
@@ -63,7 +64,7 @@ func (d *DataSource) GetAllUsers(urlQuery url.Values) ([]model.User, int, int) {
 	if searchValue != "" {
 		splidWords := strings.Fields(searchValue)
 		for _, w := range splidWords {
-			sliceBson = append(sliceBson, bson.M{"$or": []bson.M{bson.M{"firstname": bson.M{"$regex": "^"+w, "$options" : "i"}}, bson.M{"lastname": bson.M{"$regex": "^"+w, "$options" : "i"}},bson.M{"email": bson.M{"$regex": "^"+w, "$options" : "i"}}}})
+			sliceBson = append(sliceBson, bson.M{"$or": []bson.M{bson.M{"firstname": bson.M{"$regex": "^"+w, "$options" : "i"}}, bson.M{"lastname": bson.M{"$regex": "^"+w, "$options" : "i"}},bson.M{"email": bson.M{"$regex": "^"+w, "$options" : "i"}}, bson.M{"business.namearr": bson.M{"$regex": "^"+w, "$options" : "i"}}}})
 		}
 	
 		query["$and"] = sliceBson
@@ -73,9 +74,9 @@ func (d *DataSource) GetAllUsers(urlQuery url.Values) ([]model.User, int, int) {
         "$match" :query,
 	}
 	
-	pp := bson.M{
+	/*pp := bson.M{
         "$project": bson.M {"_id": 0},
-	}
+	}*/
 	
 	pl := bson.M{
         "$limit" :limit,
@@ -92,7 +93,7 @@ func (d *DataSource) GetAllUsers(urlQuery url.Values) ([]model.User, int, int) {
 	Db.Init()
 	c := Db.C(userCol)
 	
-	pipe := c.Pipe([]bson.M{pm, po, pp, ps, pl })
+	pipe := c.Pipe([]bson.M{pm, po, /*pp,*/ ps, pl })
 	if err := pipe.All(&d.Users); err != nil {	
 		log.Printf(err.Error())
 	}
@@ -137,7 +138,7 @@ func (d *DataSource) GetAllBusinesses(urlQuery url.Values) ([]model.Business, in
 	if searchValue != "" {
 		splidWords := strings.Fields(searchValue)
 		for _, w := range splidWords {
-			sliceBson = append(sliceBson, bson.M{"$or": []bson.M{bson.M{"nameSplit": bson.M{"$regex": "^"+w}}}})
+			sliceBson = append(sliceBson, bson.M{"$or": []bson.M{bson.M{"namearr": bson.M{"$regex": "^"+w}}}})
 		}
 	
 		query["$and"] = sliceBson
@@ -147,9 +148,9 @@ func (d *DataSource) GetAllBusinesses(urlQuery url.Values) ([]model.Business, in
         "$match" :query,
 	}
 	
-	pp := bson.M{
-        "$project": bson.M {"_id": 0},
-	}
+	/*pp := bson.M{
+        "$project": bson.M {},
+	}*/
 	
 	pl := bson.M{
         "$limit" :limit,
@@ -166,7 +167,7 @@ func (d *DataSource) GetAllBusinesses(urlQuery url.Values) ([]model.Business, in
 	Db.Init()
 	c := Db.C(businessCol)
 	
-	pipe := c.Pipe([]bson.M{pm, po, pp, ps, pl })
+	pipe := c.Pipe([]bson.M{pm, po, /*pp,*/ ps, pl })
 	if err := pipe.AllowDiskUse().All(&d.Businesses); err != nil {	
 		log.Printf(err.Error())
 	}
@@ -182,4 +183,66 @@ func (d *DataSource) GetAllBusinesses(urlQuery url.Values) ([]model.Business, in
 	Db.Close()
 	
 	return d.Businesses, CountFiltered, Count
+}
+
+func (d *DataSource) GetBusinessByID(businessID string) model.Business {
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(businessCol)
+	business := model.Business{}
+	
+	if err := c.Find(bson.M{"_id": bson.ObjectIdHex(businessID)}).One(&business); err != nil {
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return business
+}
+
+func (d *DataSource) UpdateBusinessByID(businessID string, business bson.M, user bson.M, userID string) bool {
+	businessIDHex := bson.ObjectIdHex(businessID)
+	userIDHex := bson.ObjectIdHex(userID)
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(businessCol)
+	if err := c.Update(bson.M{"_id":businessIDHex}, bson.M{"$set": business}); err != nil {
+		log.Printf(err.Error())
+	}
+	c = Db.C(userCol)
+	if err := c.Update(bson.M{"_id": userIDHex, "business._id":businessIDHex}, bson.M{"$set": user}); err != nil {
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return true
+}
+
+func (d *DataSource) DeleteBusinessByID(businessID string/*, userID string*/) bool {
+	businessIDHex := bson.ObjectIdHex(businessID)
+	//userIDHex := bson.ObjectIdHex(userID)
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(businessCol)
+	
+	if err := c.Remove(bson.M{"_id": businessIDHex/*, "user_id": userID*/}); err != nil {
+		log.Printf(err.Error())
+		return false
+	}
+	
+	c = Db.C(userCol)
+	
+	if err := c.Update(bson.M{/*"_id": userIDHex,*/ "business._id":businessIDHex}, bson.M{"$pull": bson.M{"business": bson.M{"_id": businessIDHex}}}); err != nil {
+		log.Printf(err.Error())
+	}
+	return true;
+}
+
+func (d *DataSource) GetAllBusinessCategories() []model.Category {
+	var categories []model.Category
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(businessCategCol)
+	if err := c.Find(nil).All(&categories); err != nil {	
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return categories
 }

@@ -5,21 +5,21 @@
 				<form class="businessForm" action="/businesses/add/step3" method="post">
 					<div class="panel-body2">						
 						<div class="form-group">
-							<label for="email">Industry</label>
-								<select class="form-control businessIndustry" name="business[industry]">
-									<option value="">Choose Industry</option>
+							<label for="email">Primary Category</label>
+								<select class="form-control businessCateg" name="business[category]">
+									<option value="">Choose Category</option>
 									{{range .categ}}
-									<option {{if eq .Name $.business.Industry}} selected {{end}} value="{{.Name}}">{{.Name}}</option>
+									<option {{if eq .Name $.business.Category}} selected {{end}} value="{{.Name}}">{{.Name}}</option>
 									{{end}}
 								</select>
 						</div>
 						
 							<div class="form-group">
-							<label for="email">Industry 2</label>
-								<select class="form-control businessCateg2" name="business[categ2]">
-									<option value="">Choose Industry</option>
+							<label for="email">Secondary Category</label>
+								<select class="form-control businessCateg2" name="business[category2]">
+									<option value="">Choose Cateogry</option>
 									{{range .categ}}
-									<option {{if eq .Name $.business.Categ2}} selected {{end}} value="{{.Name}}">{{.Name}}</option>
+									<option {{if eq .Name $.business.Category2}} selected {{end}} value="{{.Name}}">{{.Name}}</option>
 									{{end}}
 								</select>
 						</div>
@@ -66,15 +66,6 @@
 								</select>
 						</div>
 						
-						<div class="form-group">
-							<label for="lastname">How did you hear of Bunity?</label>
-								<select class="form-control businessHowYourHear" name="business[howYourHear]">
-									<option value="">Choose How did you hear of Zaphiri?</option>
-									{{range .data.howYouHear}}
-									<option {{if eq . $.business.HowYourHear}} selected {{end}} value="{{.}}">{{.}}</option>
-									{{end}}
-								</select>
-						</div>
 						<input type="hidden" name="step" value="2">
 						<input type="hidden" name="businessID" value="{{.businessID}}">
 						<div class="pull-left">

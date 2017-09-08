@@ -1,9 +1,36 @@
 td.details-control:before {
-    content: "\f055 ";
     font-family: fontawesome;
 	font-size:1.2rem;
+	content: "\f055";
+}
+tr.details td.details-control:before {
+    content: "\f056";
 }
 td.details-control {
 	text-align:center;
 	cursor: pointer;
+}
+td .actionBtns .fa {
+	font-size: 1.33333em;
+}
+#userListTable table td {
+	border:0;
+}
+.hideShowBtn, .hideShowBtn:hover {
+	color: #555;
+}
+.hideShowBtn:before {
+	font-family: fontawesome;
+	font-size:1.2rem;
+	content: "\f055";
+}
+.showBusiness.hideShowBtn:before {
+	content: "\f056";
+}
+
+#userListTable .odd {
+	
+}
+#userListTable .even {
+	
 }

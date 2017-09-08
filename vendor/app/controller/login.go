@@ -8,7 +8,6 @@ import(
 	"gopkg.in/mgo.v2/bson"
 	"app/shared/social/fb"
 	"app/shared/mail"
-
 	"github.com/dchest/passwordreset"
 	"time"
 	"log"
@@ -36,7 +35,27 @@ func Login(ctx context.Context) {
 func LoginPost(ctx context.Context) {
 	_email := string(ctx.FormValue("email"))
 	_pass := string(ctx.FormValue("password"))
-	model.CheckLogin(_email, _pass, ctx)
+	cfg := config.Init()
+	SecretKey := cfg.User.SecretKey
+	result := model.User{}
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("users")
+	if err := c.Find(bson.M{"email": _email}).One(&result); err != nil {
+		panic(err.Error())
+	}
+	Db.Close()
+	hash := []byte(result.Account.Password)
+	pass := []byte(_pass + SecretKey)
+	err := bcrypt.CompareHashAndPassword(hash, pass)
+	auth := true
+	if err != nil {
+		auth = false
+		result = model.User{}
+	}
+	ctx.Values().Set("auth", auth)
+	ctx.Values().Set("user", result)
+	ctx.Next()
 }
 
 func SingupSocial(ctx context.Context) {

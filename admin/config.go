@@ -25,10 +25,6 @@ func NewAdminMenu() *[]AdminItem {
 					Name: "Users",
 					Url: "/users",
 				},
-				AdminSubItem {
-					Name: "Businesses",
-					Url: "/businesses",
-				},
 			},
 		},
 		AdminItem {

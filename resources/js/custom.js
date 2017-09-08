@@ -30,7 +30,7 @@ var socket = new Ws("ws://bunity.com:8081/userchat");
 $(document).ready(function() {
 	Dropzone.prototype.defaultOptions.dictRemoveFile = "";
 	//$.fn.select2.defaults.set("theme", "classic");
-	$('.businessCountry, .businessStateUsa, .businessStateCanada, .businessStateAustralia, .businessIndustry, .businessCateg2').select2();
+	$('.businessCountry, .businessStateUsa, .businessStateCanada, .businessStateAustralia, .businessCateg, .businessCateg2').select2();
 	
 	$('.phonePrefix').select2({
 		templateSelection: formatState,
@@ -332,7 +332,7 @@ $(document).ready(function() {
 						var strL = str.toLowerCase();
 						var n = data.results[i].Name.replace(strL/*new RegExp(strL, 'g')*/, "<strong>"+strL+"</strong>");
 						var b = data.results[i];
-						html += '<li class=""><a href="/'+data.results[i].Url+'"><div class="pull-left imgLiveSearch"><img src="/static/uploads/'+b.UserId+'/'+b.Url+'/profile/'+b.Image[0]+'"></div><div class="liveSearchRIght"><div>'+n+'</div><div><small class="liveSearchCat">'+b.Industry+'</small></div></div></a></li>';
+						html += '<li class=""><a href="/'+data.results[i].Url+'"><div class="pull-left imgLiveSearch"><img src="/static/uploads/'+b.UserId+'/'+b.Url+'/profile/'+b.Image[0]+'"></div><div class="liveSearchRIght"><div>'+n+'</div><div><small class="liveSearchCat">'+b.Category+'</small></div></div></a></li>';
 					}
 					html += '</ul>';
 				} else {
@@ -657,6 +657,7 @@ function galleryUploadFunc() {
 		maxFilesize: 5,
 		acceptedFiles: ".jpeg,.jpg,.png",
 		autoProcessQueue : false,
+		autoQueue: false,
 		accept: function(file, done) {
 			if(file.cropped) {
 				done();
@@ -749,7 +750,7 @@ function galleryUploadFunc() {
 			if (file.width < 160 && file.height < 160) {
 				file.rejectDimensions("The resolution has to be at least 160 x 160");
 			}	else {
-				console.log("hai");
+
 				file.acceptDimensions();
 			}
 		}
@@ -796,9 +797,9 @@ function galleryUploadFunc() {
 
 				myDropzone.removeAllFiles();
 				myDropzone.options.maxFiles = 1;
-		
-				myDropzone.addFile(newFile);
 				
+				myDropzone.addFile(newFile);
+				myDropzone.enqueueFile(newFile);
 				myDropzone.processQueue();
 				
 				
@@ -847,6 +848,7 @@ function galleryUploadFunc() {
 		addRemoveLinks : true,
 		maxFiles:2,
 		autoProcessQueue : false,
+		autoQueue: false,
 		accept: function(file, done) {
 			if(file.cropped) {
 				done();
@@ -978,8 +980,8 @@ function galleryUploadFunc() {
 				  myDropzone.removeAllFiles();
 				  myDropzone.options.maxFiles = 1;
 		
-				console.log(myDropzone.files);
 				myDropzone.addFile(newFile);
+				myDropzone.enqueueFile(newFile);
 				myDropzone.processQueue();
 				
 				
@@ -1076,8 +1078,8 @@ function loadBusinessesAjax() {
 								</a>
 								<div class="">
 									<a href="/`+b[i]._id.toString()+`" class="">`+b[i].name+`</a>
-									<p style="margin-bottom:0;">`+b[i].industry+`</p>
-									<p style="margin-bottom:0;">`+b[i].city+`, `+b[i].country+`</p>
+									<p style="margin-bottom:0;">`+b[i].categ+`</p>
+									<p style="margin-bottom:0;">`+b[i].address.city+`, `+b[i].address.country+`</p>
 									<p style="margin-bottom:0;">`+b[i].nrLikes+` like this</p>
 								</div>
 							</li>`;

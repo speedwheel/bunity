@@ -94,7 +94,7 @@
 						{{end}}
 						<div class="address-box box-small">
 							<small class="block">Address</small>
-							<span class="block">{{.business.Address}}, {{.business.State}}, {{.business.Country}}, {{.business.City}}</span>
+							<span class="block">{{.business.Address.Address}}, {{.business.Address.State}}, {{.business.Address.Country}}, {{.business.Address.City}}</span>
 						</div>
 						<div class="phone-box box-small">
 							<small class="block">Phone</small>
@@ -170,7 +170,7 @@
 							
 							<div class="col-sm-8 business-text">
 								<strong class="block">{{.Name}}</strong>
-								<span class="block">{{.City}}, {{.State}}, {{.Country}}<br> {{.Industry}}</span>
+								<span class="block">{{.Address.City}}, {{.Address.State}}, {{.Address.Country}}<br> {{.Category}}</span>
 							</div>
 						</div>
 						{{end}}

@@ -42,7 +42,7 @@ type LiveResults struct {
 	Name string
 	Image[] string
 	Url string
-	Industry string
+	Category string
 	UserId string
 }
 
@@ -54,12 +54,12 @@ var (
 	statesUSA = []string {"Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","District of Columbia","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"}
 	statesCanada = []string {"British Columbia","Ontario","Newfoundland and Labrador","Nova Scotia", "Prince Edward Island", "New Brunswick", "Quebec", "Manitoba", "Saskatchewan", "Alberta", "Northwest Territories", "Nunavut","Yukon Territory"}
 	statesAustralia = []string {"New South Wales","Victoria","Queensland","Tasmania","South Australia","Western Australia","Northern Territory","Australian Capital Terrirory"}
-	industry = []string {"Accounting","Advertising","Automotive","Computers","Construction","Consulting","Dental","Education","Entertainment","Entrepreneur","Financial","Health Care","Internet","Law","Manufacturing","Marketing","Medical","Printing","Publishing","Real Estate","Restaurant","Retail","Sales","Service","Telecommunications","Travel","Wholesale"}
+	category = []string {"Accounting","Advertising","Automotive","Computers","Construction","Consulting","Dental","Education","Entertainment","Entrepreneur","Financial","Health Care","Internet","Law","Manufacturing","Marketing","Medical","Printing","Publishing","Real Estate","Restaurant","Retail","Sales","Service","Telecommunications","Travel","Wholesale"}
 	yearsBusiness = []string {"Start-Up","1 - 5 Years","6 - 10 Years","11 + Years"}
 	nrEmployees = []string {"1-5","6-10","11-20","21-50","51-100","101-250","251+"}
 	sizeBusiness = []string{"$100k - $1MM","$101MM +","$26MM - $100MM","$2MM - $5MM","$6MM - $25MM","Just Starting","Less than $100k"}
 	relationshipBusiness = []string{"I'm the owner of this company.", "I work for this company.","I don't work here, but I'm acting on behalf of this company.","I'm a user of Zaphiri improving the business listing."}
-	howYouHear = []string{"Business Breakthroughs International","Business Coach/Consultant","Business Mastery Event","Chet Holmes","Friend/Associate","Mitch Russo","Radio","Search Engine","Social Networking","Solution Provider","Tony Robbins","Trade Show","Twitter","Web Seminar"}
+	//howYouHear = []string{"Business Breakthroughs International","Business Coach/Consultant","Business Mastery Event","Chet Holmes","Friend/Associate","Mitch Russo","Radio","Search Engine","Social Networking","Solution Provider","Tony Robbins","Trade Show","Twitter","Web Seminar"}
 	phonePrefix = map[string]string {"AD": "376","AE": "971","AF": "93","AG": "1-268","AI": "1-264","AL": "355","AM": "374","AO": "244","AQ": "672","AR": "54","AS": "1-684","AT": "43","AU": "61","AW": "297","AX": "358-18","AZ": "994","BA": "387","BB": "1-246","BD": "880","BE": "32","BF": "226","BG": "359","BH": "973","BI": "257","BJ": "229","BL": "590","BM": "1-441","BN": "673","BO": "591","BQ": "599","BR": "55","BS": "1-242","BT": "975","BV": "","BW": "267","BY": "375","BZ": "501","CA": "1","CC": "61","CD": "243","CF": "236","CG": "242","CH": "41","CI": "225","CK": "682","CL": "56","CM": "237","CN": "86","CO": "57","CR": "506","CU": "53","CV": "238","CW": "599","CX": "61","CY": "357","CZ": "420","DE": "49","DJ": "253","DK": "45","DM": "1-767","DO": "1-809 and 1-829","DZ": "213","EC": "593","EE": "372","EG": "20","EH": "212","ER": "291","ES": "34","ET": "251","FI": "358","FJ": "679","FK": "500","FM": "691","FO": "298","FR": "33","GA": "241","GB": "44","GD": "1-473","GE": "995","GF": "594","GG": "44-1481","GH": "233","GI": "350","GL": "299","GM": "220","GN": "224","GP": "590","GQ": "240","GR": "30","GS": "500","GT": "502","GU": "1-671","GW": "245","GY": "592","HK": "852","HM": " ","HN": "504","HR": "385","HT": "509","HU": "36","ID": "62","IE": "353","IL": "972","IM": "44-1624","IN": "91","IO": "246","IQ": "964","IR": "98","IS": "354","IT": "39","JE": "44-1534","JM": "1-876","JO": "962","JP": "81","KE": "254","KG": "996","KH": "855","KI": "686","KM": "269","KN": "1-869","KP": "850","KR": "82","KW": "965","KY": "1-345","KZ": "7","LA": "856","LB": "961","LC": "1-758","LI": "423","LK": "94","LR": "231","LS": "266","LT": "370","LU": "352","LV": "371","LY": "218","MA": "212","MC": "377","MD": "373","ME": "382","MF": "590","MG": "261","MH": "692","MK": "389","ML": "223","MM": "95","MN": "976","MO": "853","MP": "1-670","MQ": "596","MR": "222","MS": "1-664","MT": "356","MU": "230","MV": "960","MW": "265","MX": "52","MY": "60","MZ": "258","NA": "264","NC": "687","NE": "227","NF": "672","NG": "234","NI": "505","NL": "31","NO": "47","NP": "977","NR": "674","NU": "683","NZ": "64","OM": "968","PA": "507","PE": "51","PF": "689","PG": "675","PH": "63","PK": "92","PL": "48","PM": "508","PN": "870","PR": "1-787 and 1-939","PS": "970","PT": "351","PW": "680","PY": "595","QA": "974","RE": "262","RO": "40","RS": "381","RU": "7","RW": "250","SA": "966","SB": "677","SC": "248","SD": "249","SE": "46","SG": "65","SH": "290","SI": "386","SJ": "47","SK": "421","SL": "232","SM": "378","SN": "221","SO": "252","SR": "597","SS": "211","ST": "239","SV": "503","SX": "599","SY": "963","SZ": "268","TC": "1-649","TD": "235","TF": "","TG": "228","TH": "66","TJ": "992","TK": "690","TL": "670","TM": "993","TN": "216","TO": "676","TR": "90","TT": "1-868","TV": "688","TW": "886","TZ": "255","UA": "380","UG": "256","UM": "1","US": "1","UY": "598","UZ": "998","VA": "379","VC": "1-784","VE": "58","VG": "1-284","VI": "1-340","VN": "84","VU": "678","WF": "681","WS": "685","XK": "","YE": "967","YT": "262","ZA": "27","ZM": "260","ZW": "263"}
 )
 
@@ -150,57 +150,6 @@ func BusinessAddStep1(ctx context.Context) {
 	ctx.View("business_add.html")	
 }
 
-func BusinessAddStep11(ctx context.Context) {
-	session := ses.Sessions.Start(ctx)
-	business := model.Business{}
-	businessSession := session.Get("businessForm")
-	if ctx.Params().Get("businessID") != "" {
-		userSession := session.Get("user").(model.User)
-		business = model.GetBusinessByIDandUser(bson.ObjectIdHex(ctx.Params().Get("businessID")), userSession.Id)
-		ctx.ViewData("businessID", bson.ObjectIdHex(ctx.Params().Get("businessID")).Hex())
-	} else if businessSession != nil {
-		business = session.Get("businessForm").(model.Business)
-	}
-	fmt.Println(business)
-	ctx.ViewData("business", business)
-	ctx.ViewData("countries", countries)
-	ctx.ViewData("statesUSA", statesUSA)
-	ctx.ViewData("statesCanada", statesCanada)
-	ctx.ViewData("statesAustralia", statesAustralia)
-	
-	ctx.View("business_add.html")	
-}
-
-func BusinessAddPost(ctx context.Context) {
-	
-	/*business := model.User{
-		Businesses: []model.Business  {
-			{
-				bson.NewObjectId(),
-				ctx.FormValue("business[name]"),
-				ctx.FormValue("description"),
-				ctx.FormValue("phone"),
-				ctx.FormValue("website"),
-				ctx.FormValue("address"),
-			},
-		},
-	}*/
-	
-	
-
-	//Db := db.MgoDb{}
-	//Db.Init()
-	//c := Db.C("users")
-
-	//userSession := session.Get("user").(model.User)
-	//if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$push": bson.M{"businesses": bson.M{"_id": business.Businesses[0].Id, "name": business.Businesses[0].Name, "description": business.Businesses[0].Description, "phone": business.Businesses[0].Phone, "website": business.Businesses[0].Website, "address": business.Businesses[0].Address}}}); err != nil {
-	//	panic(err)
-	//}
-	//Db.Close()
-	
-	
-}
-
 func BusinessAddStep2(ctx context.Context) {
 	session := ses.Sessions.Start(ctx)
 	business := model.Business{}
@@ -216,15 +165,14 @@ func BusinessAddStep2(ctx context.Context) {
 	}
 	
 	categ := model.GetAllCategories(0)
-	fmt.Println(categ)
 	
 	ctx.ViewData("data", map[string][]string{
-		"industries": industry,
+		"industries": category,
 		"yearsBusiness": yearsBusiness,
 		"nrEmployees": nrEmployees,
 		"sizeBusiness": sizeBusiness,
 		"relationshipBusiness": relationshipBusiness,
-		"howYouHear": howYouHear,
+		//"howYouHear": howYouHear,
 	})
 	
 	ctx.ViewData("categ", categ)
@@ -233,33 +181,6 @@ func BusinessAddStep2(ctx context.Context) {
 	ctx.View("business_add2.html")
 }
 
-func BusinessAddStep22(ctx context.Context) {
-	session := ses.Sessions.Start(ctx)
-	business := model.Business{}
-	businessSession := session.Get("businessForm")
-	if ctx.Params().Get("businessID") != "" {
-		userSession := session.Get("user").(model.User)
-		business = model.GetBusinessByIDandUser(bson.ObjectIdHex(ctx.Params().Get("businessID")), userSession.Id)
-		ctx.ViewData("businessID", bson.ObjectIdHex(ctx.Params().Get("businessID")).Hex())
-	} else if businessSession != nil { 
-		business = session.Get("businessForm").(model.Business)
-	} else {
-		ctx.Redirect("/business/add")
-	}
-	categ := model.GetAllCategories(0)
-
-	ctx.ViewData("data", map[string][]string{
-		"yearsBusiness": yearsBusiness,
-		"nrEmployees": nrEmployees,
-		"sizeBusiness": sizeBusiness,
-		"relationshipBusiness": relationshipBusiness,
-		"howYouHear": howYouHear,
-	})
-	ctx.ViewData("categ", categ)
-	
-	ctx.ViewData("business", business)
-	ctx.View("business_add2.html")
-}
 
 func BusinessAddStep3(ctx context.Context) {
 	session := ses.Sessions.Start(ctx)
@@ -415,17 +336,23 @@ func BusinessEventsTracker(ctx context.Context) {
 	formError := []FormError{}
 	if ctx.FormValue("back") == "0" {
 		setValues := bson.M{}
+		setValues2 := bson.M{}
 		if ctx.FormValue("step") == "1" {
 			business.Website = ctx.FormValue("business[website]")
-			setValues["website"] = business.Website
+			setValues["web"] = business.Website
 			
 			business.Name = ctx.FormValue("business[name]") 
 			if business.Name == "" {
 				formError = append(formError, FormError{"businessName", "This field is required"})
 			} else {
 				setValues["name"] = business.Name
-				setValues["slug"] = strings.ToLower(business.Name)
-				setValues["nameSplit"] = strings.Fields(strings.ToLower(business.Name))
+				setValues2["business.$.name"] = business.Name
+				//setValues["slug"] = strings.ToLower(business.Name)
+				business.NameSplit = strings.Fields(strings.ToLower(business.Name))
+				setValues["namearr"] = business.NameSplit
+				setValues2["business.$.namearr"] = business.NameSplit
+				
+				
 			}
 			business.Phone = ctx.FormValue("business[phone]")
 			if business.Phone == "" {
@@ -434,55 +361,54 @@ func BusinessEventsTracker(ctx context.Context) {
 				setValues["phone"] = business.Phone
 			}
 			
-			business.Country = ctx.FormValue("business[country]")
-			if business.Country == "" {
+			business.Address.Country = ctx.FormValue("business[country]")
+			if business.Address.Country == "" {
 				formError = append(formError, FormError{"businessCountry", "This field is required"})
 			} else {
-				setValues["country"] = business.Country
-				mapAddress += business.Country
+				setValues["address.country"] = business.Address.Country
+				mapAddress += business.Address.Country
 				
 			}
 			
-			business.Address = ctx.FormValue("business[address]")
-			if business.Address == "" {
+			business.Address.Address = ctx.FormValue("business[address]")
+			if business.Address.Address == "" {
 				formError = append(formError, FormError{"businessAddress", "This field is required"})
 			} else {
-				setValues["address"] = business.Address
-				mapAddress += business.Address+","
+				setValues["address.add"] = business.Address.Address
+				mapAddress += business.Address.Address+","
 			}
 			
-			business.Address2 = ctx.FormValue("business[address2]")
-			setValues["address2"] = business.Address2
+			business.Address.Address2 = ctx.FormValue("business[address2]")
+			setValues["address.add2"] = business.Address.Address2
 			
-			business.Area = ctx.FormValue("business[area]")
-			if business.Area == "" {
+			business.Address.Area = ctx.FormValue("business[area]")
+			if business.Address.Area == "" {
 				formError = append(formError, FormError{"businessArea", "This field is required"})
 			} else {
-				setValues["area"] = business.Area
-				mapAddress += business.Area+","
+				setValues["address.area"] = business.Address.Area
+				mapAddress += business.Address.Area+","
 			}
-			business.State = ctx.FormValue("business[state]")
-			if business.State == "" && (business.Country == "United States" || business.Country == "Canada" || business.Country == "Australia") {
+			business.Address.State = ctx.FormValue("business[state]")
+			if business.Address.State == "" && (business.Address.Country == "United States" || business.Address.Country == "Canada" || business.Address.Country == "Australia") {
 				formError = append(formError, FormError{"businessStateControl", "This field is required"})
 			} else {
-				setValues["state"] = business.State
+				setValues["address.state"] = business.Address.State
 			}
-			business.City = ctx.FormValue("business[city]")
-			if business.City == "" {
+			business.Address.City = ctx.FormValue("business[city]")
+			if business.Address.City == "" {
 				formError = append(formError, FormError{"businessCity", "This field is required"})
 			} else {
-				setValues["city"] = business.City
-				mapAddress += business.City+","
+				setValues["address.city"] = business.Address.City
+				mapAddress += business.Address.City+","
 			}
-			business.PostalCode = ctx.FormValue("business[postal_code]")
-			if business.PostalCode == "" {
+			business.Address.PostalCode = ctx.FormValue("business[postal_code]")
+			if business.Address.PostalCode == "" {
 				formError = append(formError, FormError{"businessPostalCode", "This field is required"})
 			} else {
-				setValues["postalcode"] = business.PostalCode
-				mapAddress += business.PostalCode+","
+				setValues["address.postalcode"] = business.Address.PostalCode
+				mapAddress += business.Address.PostalCode+","
 			}
 			
-			fmt.Println(mapAddress)
 			if mapAddress != "" {
 				coor := general.MapsInit(mapAddress)
 				if (coor) != nil {
@@ -492,50 +418,42 @@ func BusinessEventsTracker(ctx context.Context) {
 			}
 		}
 		if ctx.FormValue("step") == "2" {
-			business.Industry = ctx.FormValue("business[industry]")
-			if business.Industry == "" {
-				formError = append(formError, FormError{"businessIndustry", "This field is required"})
+			business.Category = ctx.FormValue("business[category]")
+			if business.Category == "" {
+				formError = append(formError, FormError{"businessCateg", "This field is required"})
 			} else {
-				setValues["industry"] = business.Industry
+				setValues["category"] = business.Category
 			}
-			business.Categ2 = ctx.FormValue("business[categ2]")
-			if business.Categ2 == "" {
+			business.Category2 = ctx.FormValue("business[category2]")
+			if business.Category2 == "" {
 				formError = append(formError, FormError{"businessCateg2", "This field is required"})
 			} else {
-				setValues["categ2"] = business.Categ2
+				setValues["category2"] = business.Category2
 			}
 			business.YearsBusiness = ctx.FormValue("business[yearsBusiness]")
 			if business.YearsBusiness == "" {
 				formError = append(formError, FormError{"businessYearsBusiness", "This field is required"})
 			} else {
-				setValues["yearsBusiness"] = business.YearsBusiness
+				setValues["ybuss"] = business.YearsBusiness
 			}
 			business.NumberEmployees = ctx.FormValue("business[numberEmployees]")
 			if business.NumberEmployees == "" {
 				formError = append(formError, FormError{"businessNumberEmployees", "This field is required"})
 			} else {
-				setValues["numberEmployees"] = business.NumberEmployees
+				setValues["emp"] = business.NumberEmployees
 			}
 			business.SizeBusiness = ctx.FormValue("business[sizeBusiness]")
 			if business.SizeBusiness == "" {
 				formError = append(formError, FormError{"businessSizeBusiness", "This field is required"})
 			} else {
-				setValues["sizeBusiness"] = business.SizeBusiness
+				setValues["sbuss"] = business.SizeBusiness
 			}
 			business.RelationshipBusiness = ctx.FormValue("business[relationshipBusiness]")
 			if business.RelationshipBusiness == "" {
 				formError = append(formError, FormError{"businessRelationshipBusiness", "This field is required"})
 			} else {
-				setValues["relationshipBusiness"] = business.RelationshipBusiness
+				setValues["relbuss"] = business.RelationshipBusiness
 			}
-			business.HowYourHear = ctx.FormValue("business[howYourHear]")
-			if business.HowYourHear == "" {
-				formError = append(formError, FormError{"businessHowYourHear", "This field is required"})
-			} else {
-				setValues["howYourHear"] = business.HowYourHear
-			}
-			
-			
 		}
 		
 		
@@ -560,6 +478,10 @@ func BusinessEventsTracker(ctx context.Context) {
 				if err := c.Update(bson.M{"user_id": userSession.Id, "_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}, bson.M{"$set": setValues}); err != nil {
 					log.Printf(err.Error())
 				}
+				c := Db.C("users")
+				if err := c.Update(bson.M{"_id": userSession.Id, "business._id":bson.ObjectIdHex(ctx.FormValue("businessID"))}, bson.M{"$set": setValues2}); err != nil {
+					log.Printf(err.Error())
+				}
 			}
 			
 			if ctx.FormValue("step") == "3" {
@@ -567,7 +489,7 @@ func BusinessEventsTracker(ctx context.Context) {
 				if business.Description == "" {
 					formError = append(formError, FormError{"businessDescription", "This field is required"})
 				}
-				if err := c.Update(bson.M{"user_id": userSession.Id, "_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}, bson.M{"$set": bson.M{"description": business.Description}}); err != nil {
+				if err := c.Update(bson.M{"user_id": userSession.Id, "_id":bson.ObjectIdHex(ctx.FormValue("businessID"))}, bson.M{"$set": bson.M{"desc": business.Description}}); err != nil {
 					log.Printf(err.Error())
 				}
 			}
@@ -587,7 +509,6 @@ func BusinessEventsTracker(ctx context.Context) {
 	
 	
 	if ctx.FormValue("businessID") == "" {
-		fmt.Println(ctx.FormValue("businessID"))
 		session.Set("businessForm", business)
 	}
 	
@@ -613,6 +534,7 @@ func BusinessAddFinish(ctx context.Context) {
 	session := ses.Sessions.Start(ctx)
 	businessSession := session.Get("businessForm")
 	business := model.Business{}
+	businessS := model.BusinessS{}
 	if businessSession != nil {
 		userSession := session.Get("user").(model.User)
 		Db := db.MgoDb{}
@@ -625,13 +547,15 @@ func BusinessAddFinish(ctx context.Context) {
 		business.Description = template.HTML(ctx.FormValue("business[description]"))
 		business.Verified = 0
 		business.Premium = 0
-		business.Slug = strings.ToLower(business.Name)
-		business.NameSplit = strings.Fields(business.Slug)
+		//business.Slug = strings.ToLower(business.Name)
 		if err := c.Insert(&business); err != nil {
 			panic(err)
 		}
+		businessS.Id = business.Id
+		businessS.Name = business.Name
+		businessS.NameSplit = business.NameSplit
 		c = Db.C("users")
-		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$push": bson.M{"businesses": business.Id}}); err != nil {
+		if err := c.Update(bson.M{"_id": userSession.Id}, bson.M{"$push": bson.M{"business": businessS}}); err != nil {
 			panic(err)
 		}
 		Db.Close()
@@ -641,7 +565,6 @@ func BusinessAddFinish(ctx context.Context) {
 		//session.Set("businessForm", nil)
 		
 		}
-	fmt.Println(business.Id.Hex())
 	ctx.JSON(business.Id.Hex())
 }
 
@@ -778,7 +701,7 @@ func SendSms(ctx context.Context) {
 	phoneSms := ctx.FormValue("smsCode")
 	prefix := ctx.FormValue("prefix")
 	phoneNr := prefix + phoneSms
-	fmt.Println(phoneNr)
+
 	formError := []FormError{}
 	if phoneSms == "" {
 		formError = append(formError, FormError{"smsCode", "This field is required"})
@@ -1034,7 +957,7 @@ func LiveSearch(ctx context.Context) {
 	searchStr := strings.ToLower(ctx.FormValue("keyword"))
 	splidWords := strings.Fields(searchStr)
 	for _, w := range splidWords {
-        sliceBson = append(sliceBson, bson.M{"nameSplit": bson.M{"$regex": "^"+w}})
+        sliceBson = append(sliceBson, bson.M{"namearr": bson.M{"$regex": "^"+w}})
     }
 	query["$and"] = sliceBson
 	//query["slug"] = bson.M{"$regex": "\\b"+searchStr+"\\w*"}
@@ -1060,7 +983,7 @@ func LiveSearch(ctx context.Context) {
         "$match" : query,
 	}
 	oa := bson.M{
-        "$project": bson.M {"slug": 1, "profile": 1, "check":1, "pro":1, "user_id":1, "industry":1},
+        "$project": bson.M {"name": 1, "profile": 1, "check":1, "pro":1, "user_id":1, "categ":1},
 	}
 	ol := bson.M{
         "$limit" :pageSize,
@@ -1069,7 +992,7 @@ func LiveSearch(ctx context.Context) {
 		"$sort": bson.D{
 			bson.DocElem{Name: "pro", Value: -1},
 			bson.DocElem{Name: "check", Value: -1},
-			bson.DocElem{Name: "slug", Value: 1},
+			bson.DocElem{Name: "name", Value: 1},
 		 },
 	}
 	pipe := c.Pipe([]bson.M{oe, oa, or, ol })
@@ -1080,7 +1003,7 @@ func LiveSearch(ctx context.Context) {
 	var excludeIds []bson.ObjectId	
 	searchResults := []LiveResults{}
 	for _, item := range business {
-		searchResults = append(searchResults, LiveResults{item.Slug, item.Profile, item.Id.Hex(), item.Industry, item.UserId.Hex()})
+		searchResults = append(searchResults, LiveResults{item.Name, item.Profile, item.Id.Hex(), item.Category, item.UserId.Hex()})
 		excludeIds = append(excludeIds, item.Id)
     }
 
@@ -1101,7 +1024,7 @@ func LiveSearch(ctx context.Context) {
 			}
 			for _, item := range business2 {
 				if len(searchResults) < 8 {
-					searchResults = append(searchResults, LiveResults{item.Slug, item.Profile, item.Id.Hex(), item.Industry, item.UserId.Hex()})
+					searchResults = append(searchResults, LiveResults{item.Name, item.Profile, item.Id.Hex(), item.Category, item.UserId.Hex()})
 				}
 			}
 		}
@@ -1121,11 +1044,11 @@ func BusinessSearch(ctx context.Context) {
 	likedFriends := ctx.FormValue("liked_friends")
 	country := ctx.FormValue("country")
 	if country != "" {
-		query["country"] = country
+		query["address.country"] = country
 	}
-	query["slug"] = bson.M{"$regex": searchStr}
+	query["name"] = bson.M{"$regex": searchStr}
 	if(businessCategory != "") {
-		query["$or"] = []bson.M{bson.M{"industry": businessCategory},bson.M{"categ2": businessCategory}}
+		query["$or"] = []bson.M{bson.M{"categ": businessCategory},bson.M{"categ2": businessCategory}}
 	}
 	verified := ctx.FormValue("verified")
 	if verified == "1" {
@@ -1178,7 +1101,7 @@ func BusinessSearch(ctx context.Context) {
         "$match" :query,
 	}
 	oa := bson.M{
-        "$project": bson.M {"pro": 1, "check": 1, "name":1, "profile":1, "description":1, "user_id":1, "likes":1, "nrLikes": bson.M{ "$size": "$likes" }, "city": 1, "country": 1, "industry": 1},
+        "$project": bson.M {"pro": 1, "check": 1, "name":1, "profile":1, "desc":1, "user_id":1, "likes":1, "nrLikes": bson.M{ "$size": "$likes" }, "address.city": 1, "address.country": 1, "categ": 1},
 	}
 	ol := bson.M{
         "$limit" :pageSize,
@@ -1190,7 +1113,7 @@ func BusinessSearch(ctx context.Context) {
 		"$sort": bson.D{
 			bson.DocElem{Name: "pro", Value: -1},
 			bson.DocElem{Name: "check", Value: -1},
-			bson.DocElem{Name: "slug", Value: 1},
+			bson.DocElem{Name: "name", Value: 1},
 		 },
 	}
 
@@ -1226,13 +1149,13 @@ func BusinessSearch(ctx context.Context) {
 			excludeIds = append(excludeIds, item["_id"].(bson.ObjectId))
 		}
 		query2 := bson.M{}
-		query2["slug"] = bson.M{"$regex": searchStr}
+		query2["name"] = bson.M{"$regex": searchStr}
 		query2["_id"] = bson.M{"$nin": excludeIds}
 		if country != "" {
 			query2["country"] = country
 		}
 		if(businessCategory != "") {
-			query2["$or"] = []bson.M{bson.M{"industry": businessCategory},bson.M{"categ2": businessCategory}}
+			query2["$or"] = []bson.M{bson.M{"categ": businessCategory},bson.M{"categ2": businessCategory}}
 		}
 		if verified == "1" {
 			query2["check"] = 1
@@ -1312,7 +1235,6 @@ func BusinessSearch(ctx context.Context) {
 		
 		ctx.View("search.html")
 	} else if (ctx.Method() == "POST") {
-		fmt.Println(pages)
 		if(int(pageNum) > int(pages)) {
 			business = []bson.M{}
 		}		

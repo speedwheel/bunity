@@ -21,7 +21,7 @@ type (
 		Image string `json:"image" bson:"image"  form:"image" facebook:"url"`
 		Liked []bson.ObjectId `json:"liked" bson:"liked" form:"liked,omitempty" facebook:"-"`
 		Account Account
-		Businesses []bson.ObjectId `json:"businesses" bson:"businesses" form:"businesses,omitempty" facebook:"-"`
+		Business []BusinessS `bson:"business"`
 		
 	}
 	
@@ -38,38 +38,48 @@ type (
 		Id  bson.ObjectId `json:"id" bson:"_id"  form:"-" facebook:"-"`
 		UserId  bson.ObjectId `json:"user_id" bson:"user_id"  form:"-" facebook:"-"`
 		Name string `json:"name" bson:"name" form:"name,omitempty" facebook:"-"`
-		Slug string `json:"slug" bson:"slug" form:"slug,omitempty" facebook:"-"`
-		NameSplit []string `json:"nameSplit" bson:"nameSplit" form:"nameSplit,omitempty" facebook:"-"`
+		Address
+		//Slug string `json:"slug" bson:"slug" form:"slug,omitempty" facebook:"-"`
+		NameSplit []string `json:"nameSplit" bson:"namearr" form:"nameSplit,omitempty" facebook:"-"`
 		Phone string `json:"phone" bson:"phone" form:"phone,omitempty" facebook:"-"`
-		Address string `json:"address" bson:"address" form:"address,omitempty" facebook:"-"`
-		Address2 string `json:"address2" bson:"address2" form:"address2,omitempty" facebook:"-"`
-		State string `json:"state" bson:"state" form:"state,omitempty" facebook:"-"`
-		City string `json:"city" bson:"city" form:"city,omitempty" facebook:"-"`
-		PostalCode string `json:"postalcode" bson:"postalcode" form:"postalcode,omitempty" facebook:"-"`
-		Website string `json:"website" bson:"website" form:"website,omitempty" facebook:"-"`
-		Area string `json:"area" bson:"area" form:"area,omitempty" facebook:"-"`
-		Country string `json:"country" bson:"country" form:"country,omitempty" facebook:"-"`
-		Industry string `json:"industry" bson:"industry" form:"industry,omitempty" facebook:"-"`
-		Categ2 string `json:"categ2" bson:"categ2" form:"categ2,omitempty" facebook:"-"`
-		YearsBusiness string `json:"yearsBusiness" bson:"yearsBusiness" form:"yearsBusiness,omitempty" facebook:"-"`
-		NumberEmployees string `json:"numberEmployees" bson:"numberEmployees" form:"numberEmployees,omitempty" facebook:"-"`
-		SizeBusiness string `json:"sizeBusiness" bson:"sizeBusiness" form:"sizeBusiness,omitempty" facebook:"-"`
-		RelationshipBusiness string `json:"relationshipBusiness" bson:"relationshipBusiness" form:"relationshipBusiness,omitempty" facebook:"-"`
-		HowYourHear string `json:"howYourHear" bson:"howYourHear" form:"howYourHear,omitempty" facebook:"-"`
-		Description template.HTML `json:"description" bson:"description" form:"description,omitempty" facebook:"-"`
+		Website string `json:"website" bson:"web" form:"website,omitempty" facebook:"-"`
+		Category string `json:"category" bson:"categ" form:"category,omitempty" facebook:"-"`
+		Category2 string `json:"category2" bson:"categ2" form:"category2,omitempty" facebook:"-"`
+		YearsBusiness string `json:"yearsBusiness" bson:"ybuss" form:"yearsBusiness,omitempty" facebook:"-"`
+		NumberEmployees string `json:"numberEmployees" bson:"nemp" form:"numberEmployees,omitempty" facebook:"-"`
+		SizeBusiness string `json:"sizeBusiness" bson:"sbuss" form:"sizeBusiness,omitempty" facebook:"-"`
+		RelationshipBusiness string `json:"relationshipBusiness" bson:"relbuss" form:"relationshipBusiness,omitempty" facebook:"-"`
+		Description template.HTML `json:"description" bson:"desc" form:"description,omitempty" facebook:"-"`
 		Gallery []string `json:"gallery" bson:"gallery" form:"gallery,omitempty" facebook:"-"`
 		Profile []string `json:"profile" bson:"profile" form:"profile,omitempty" facebook:"-"`
 		Cover []string `json:"cover" bson:"cover" form:"profile,omitempty" facebook:"-"`
-		SmsCode string `json:"smsCode" bson:"smsCode" form:"smsCode,omitempty" facebook:"-"`
+		SmsCode string `json:"smsCode" bson:"sms" form:"smsCode,omitempty" facebook:"-"`
 		Likes []bson.ObjectId `json:"likes" bson:"likes" form:"likes,omitempty" facebook:"-"`
 		Verified uint8 `json:"check" bson:"check" form:"check,omitempty" facebook:"-"`
 		Premium uint8 `json:"pro" bson:"pro" form:"pro,omitempty" facebook:"-"`
-		Social Social
-		Map Map
+		
+		Social
+		Map
+	}
+	
+	BusinessS struct {
+		Id  bson.ObjectId `json:"id" bson:"_id"  form:"-"`
+		Name string `json:"name" bson:"name" form:"name,omitempty"`
+		NameSplit []string `json:"nameSplit" bson:"namearr" form:"nameSplit,omitempty" facebook:"-"`
+	}
+	
+	Address struct {
+		Address string `json:"address" bson:"add" form:"address,omitempty" facebook:"-"`
+		Address2 string `json:"address2" bson:"add2" form:"address2,omitempty" facebook:"-"`
+		State string `json:"state" bson:"state" form:"state,omitempty" facebook:"-"`
+		City string `json:"city" bson:"city" form:"city,omitempty" facebook:"-"`
+		PostalCode string `json:"postalcode" bson:"postal" form:"postalcode,omitempty" facebook:"-"`
+		Area string `json:"area" bson:"area" form:"area,omitempty" facebook:"-"`
+		Country string `json:"country" bson:"country" form:"country,omitempty" facebook:"-"`
 	}
 	
 	Social struct {
-		Facebook string `json:"facebook" bson:"facebook" form:"facebook,omitempty" facebook:"-"`
+		Facebook string `qjson:"facebook" bson:"facebook" form:"facebook,omitempty" facebook:"-"`
 		Google string `json:"google" bson:"google" form:"google,omitempty" facebook:"-"`
 		Instagram string `json:"instagram" bson:"instagram" form:"instagram,omitempty" facebook:"-"`
 		Youtube string `json:"youtube" bson:"youtube" form:"youtube,omitempty" facebook:"-"`
@@ -96,6 +106,11 @@ func SetUserSession(ctx context.Context) {
 	//usr := usrInterface.(*User)
 	session.Set("userAuth", ctx.Values().Get("auth"))
 	session.Set("user", ctx.Values().Get("user"))
+	if ctx.Values().Get("userAuth").(bool) {
+		ctx.Redirect("/profile")
+		return
+	}
+	ctx.Redirect("/login")
 }
 
 
@@ -206,7 +221,7 @@ func GetBusinessByCateg(slug string) []Business {
 	Db := db.MgoDb{}
 	Db.Init()
 	c := Db.C("businesses")
-	if err := c.Find(bson.M{ "$or": []bson.M{bson.M{"industry": slug}, bson.M{"categ2": slug}}}).All(&businesses); err != nil {	
+	if err := c.Find(bson.M{ "$or": []bson.M{bson.M{"categ": slug}, bson.M{"categ2": slug}}}).All(&businesses); err != nil {	
 		log.Printf(err.Error())
 	}
 	
