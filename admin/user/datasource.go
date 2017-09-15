@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	userCols = []string{"", "firstname", "lastname", "email"}
+	userCols = []string{"", "", "firstname", "lastname", "email", "business.name"}
 	busCols = []string{"slug", "phone", "country", "website"}
 )
 
@@ -47,7 +47,7 @@ func (d *DataSource) GetAllUsers(urlQuery url.Values) ([]model.User, int, int) {
 	limit, _ := strconv.Atoi(urlQuery["length"][0])
 	skips, _ := strconv.Atoi(urlQuery["start"][0])
 	sortValue := 1
-	for i := 0; i < 3; i++ {
+	for i := 0; i < len(userCols) - 2; i++ {
 	stringI = strconv.Itoa(i)
 		if urlQuery["order["+stringI+"][column]"] != nil {
 			sortColInt, _ = strconv.Atoi(urlQuery["order["+stringI+"][column]"][0])

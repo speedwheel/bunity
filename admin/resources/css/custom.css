@@ -1,36 +1,97 @@
-td.details-control:before {
+.dataTable td .dt-checkboxes, .dataTable th input {
+	display: none;
+}
+.dataTable thead .select-checkbox {
+  position: relative;
+}
+.dataTable thead .select-checkbox:before,
+.dataTable thead .select-checkbox:after {
+  display: inline-block;
+  color: #455A64;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  cursor: pointer;
+}
+.dataTable thead .select-checkbox:before {
+  content: '';
+  background-color: #fff;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  margin-left: -9px;
+  border: 2px solid #607D8B;
+  border-radius: 2px;
+}
+.dataTable thead .selected .select-checkbox:after {
+  content: "\e600";
+  font-family: 'icomoon';
+  font-size: 16px;
+  line-height: 1;
+  margin-top: -8px;
+  margin-left: -8px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.dataTable thead .indeterminate .select-checkbox:after {
+    content: "";
+    line-height: 1;
+    width: 10px;
+    display: block;
+    height: 3px;
+    margin-top: -2px;
+    background-color: #555555;
+    margin-left: -5px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.dataTable .actionBtns {
+	position:relative;
+}
+.dataTable .actionBtnsContainer {
+	position:absolute;
+	top:0;
+	bottom:0;
+	margin:auto;
+	padding-top:9px;
+}
+.dataTable .actionBtnsContainer button {
+	float:inherit;
+	padding:2px 11px;
+}
+.dataTable .actionBtnsContainer i {
+	font-size:14px;
+}
+.dataTable td.details-control:before, .hideShowBtn:before, .hideShowBtn:focus:before {
+	color:#333;
     font-family: fontawesome;
 	font-size:1.2rem;
 	content: "\f055";
+	font-size:1.8rem;
+	position:absolute;
+	margin:auto;
+	top:0;
+	bottom:0;
+	left:0;
+	right:0;
 }
-tr.details td.details-control:before {
+.dataTable tr.details td.details-control:before, .showBusiness.hideShowBtn:before {
     content: "\f056";
+	
 }
-td.details-control {
+.dataTable  td.details-control, .dataTable  th.details-control {
 	text-align:center;
 	cursor: pointer;
-}
-td .actionBtns .fa {
-	font-size: 1.33333em;
-}
-#userListTable table td {
-	border:0;
+	position:relative;
+	line-height:45px;
 }
 .hideShowBtn, .hideShowBtn:hover {
 	color: #555;
 }
-.hideShowBtn:before {
-	font-family: fontawesome;
-	font-size:1.2rem;
-	content: "\f055";
+.businessTable .actionBtnsContainer {
+	position:static;
+	padding:0;
 }
-.showBusiness.hideShowBtn:before {
-	content: "\f056";
-}
-
-#userListTable .odd {
-	
-}
-#userListTable .even {
-	
+.businessTable .tdBusinessName {
+	padding:10px 40px 10px 100px;
 }

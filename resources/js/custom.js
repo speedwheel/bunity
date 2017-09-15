@@ -1187,6 +1187,9 @@ function dataURItoBlob(dataURI) {
 
     return new Blob([ia], {type:mimeString});
 }
+
+
+
 /*var messageTxt;
 var messages;
 $(function () {
