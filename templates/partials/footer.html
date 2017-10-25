@@ -23,7 +23,25 @@
   {{if not .auth}}
    <script src="https://apis.google.com/js/api:client.js"></script>
    <script src="/static/js/social.login.js"></script>
-   
+	{{else}}
+	   <script>
+   var socket = new Ws("ws://bunity.com:8081/userchat");
+	socket.On("like", function (msg) {
+		$(".notifications-count").removeClass("hidden").text(1);
+		$.notify({
+			// options
+			message: 'Someone liked your page!' 
+		},{
+			// settings
+			type: 'info',
+			placement: {
+				from: 'bottom',
+				align: 'left'
+			}
+		});
+
+	});
+   </script>
   {{end}}
 
 </body>

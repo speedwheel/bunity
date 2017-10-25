@@ -1,32 +1,5 @@
 var btnContinue;
-var socket = new Ws("ws://bunity.com:8081/userchat");
-	/*socket.OnConnect(function () {
-		console.log("emit");
-		socket.Emit("chat", "muie");
-	});
-	
-	socket.On("chat", function (msg) {
-		console.log("on");
-	});
-	
-	socket.OnDisconnect(function () {
-		console.log("disconnect");
-	});*/
-	socket.On("like", function (msg) {
-		$(".notifications-count").removeClass("hidden").text(1);
-		$.notify({
-			// options
-			message: 'Someone liked your page!' 
-		},{
-			// settings
-			type: 'info',
-			placement: {
-				from: 'bottom',
-				align: 'left'
-			}
-		});
 
-	});
 $(document).ready(function() {
 	Dropzone.prototype.defaultOptions.dictRemoveFile = "";
 	//$.fn.select2.defaults.set("theme", "classic");
@@ -754,8 +727,9 @@ function galleryUploadFunc() {
 				file.acceptDimensions();
 			}
 		}
-		$(".dz-image img").attr("src",file.url)
+		$(".dz-image img").attr("src",file.url);
 		if(file.accepted) {
+			
 			$.fancybox.close();
 			var myDropzone = this
 			if (file.cropped) {

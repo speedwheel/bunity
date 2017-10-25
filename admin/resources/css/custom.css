@@ -95,3 +95,71 @@
 .businessTable .tdBusinessName {
 	padding:10px 40px 10px 100px;
 }
+.editBusinessForm .dz-image img {
+	max-width:140px;
+	height:140px;
+}
+.editBusinessForm .dz-details {
+	display:none;
+}
+.dropzone .dz-preview a.dz-remove, .dropzone-previews .dz-preview a.dz-remove {
+	margin-top:15px;
+}
+.businessEditModal .chatInput {
+	min-height:50px;
+	max-width:100%;
+}
+
+.chat-list .media-content {
+	white-space:pre-wrap;
+}
+
+.chat-list .media {
+	margin-left:5px;
+	margin-right:5px;
+	margin-top:0;
+	padding:10px;
+}
+.chat-list .media.reversed {
+	margin-right:5px;
+	margin-left:5px;
+}
+.chat-list > li .fa {
+	opacity:0;
+}
+.chat-list > li:hover .fa {
+	opacity:1;
+	cursor:pointer;
+}
+.chat-list .media.child {
+	margin-left: 30px;
+    border-left: 2px solid #dddfe2;
+}
+.chat-list .media.reversed.child {
+	margin-right: 30px;
+    border-right: 2px solid #dddfe2;
+	border-left: none;
+}
+.chat-list .media.edit .media-content {
+	 -webkit-box-shadow: rgba(0,0,0,0.8) 0px 0 10px;
+	 -moz-box-shadow: rgba(0,0,0,0.8) 0 0 10px;
+	 box-shadow: rgba(0,0,0,0.8) 0 0 10px;
+}
+.dataTable  .editable-click, .deleteActivityType {
+	cursor:pointer;
+}
+.chat-list .reversed .media-content:not([class*=bg-]) {
+	background-color: #c7edfc;
+    border-color: #c7edfc;
+}
+.chat-list .reversed .media-content {
+	color: #333333;
+}
+#atjs {
+	min-height:36px;
+}
+@media (min-width: 1250px) {
+	  .businessEditModal .modal-dialog {
+		width: 1200px;
+	  }
+}

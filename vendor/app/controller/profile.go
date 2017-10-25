@@ -575,6 +575,7 @@ func UploadFiles(ctx context.Context) {
 	var folder string
 	if ctx.FormValue("imageType") == "gallery" {
 		folder = "gallery"
+		resizeWidth = 1024
 	} else if ctx.FormValue("imageType") == "profile" {
 		folder = "profile"
 		resizeWidth = 160
@@ -692,6 +693,7 @@ func DeleteFile(ctx context.Context) {
 	if err != nil {
 		return
 	}
+	
 }
 
 func SendSms(ctx context.Context) {

@@ -6,15 +6,29 @@ import(
 	"app/shared/db"
 	"log"
 	"net/url"
+	"app/config"
 	//"github.com/kr/pretty"
 	"strconv"
 	"strings"
+	"os"
+	"image"
+	"image/jpeg"
+    "image/png"
+	"github.com/disintegration/imaging"
+	//"fmt"
+	"math/rand"
+	"mime/multipart"
+	"time"
+	"fmt"
 )
 
 const (
 	userCol = "users"
 	businessCol = "businesses"
 	businessCategCol = "categories"
+	adminBusinessChat = "adminBusinessChat"
+	adminActivityType = "adminActivityType"
+	chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
 var (
@@ -26,8 +40,31 @@ type DataSource struct {
 	Users []model.User
 	User model.User
 	Businesses []model.Business
-	Db db.MgoDb
+
 }
+
+type ( 
+	ChatMessage struct {
+		Id  bson.ObjectId `json:"id" bson:"_id" form:"id"`
+		ParentID  bson.ObjectId `json:"parent_id" bson:"parent_id,omitempty" form:"parent_id"`
+		BusinessID  bson.ObjectId `json:"business_id" bson:"business_id" form:"business_id"`
+		Time  time.Time `json:"time" bson:"time" form:"time"`
+		Text  string `json:"text" bson:"text" form:"text"`
+		Author Author `json:"author" bson:"author" form:"author"`
+		ActivityType ActivityType `json:"activity_type" bson:"activity_type,omitempty" form:"activity_type"`
+	}
+	
+	Author struct {
+		Id  bson.ObjectId `json:"id" bson:"_id"  form:"id"`
+		Name string `json:"name" bson:"name" form:"name"`
+	}
+)
+
+type ActivityType struct {
+	Id  bson.ObjectId `json:"id" bson:"_id" form:"id"`
+	Name string `json:"name" bson:"name" form:"name"`
+}
+
 
 func NewDataSource() *DataSource {
 	return &DataSource{
@@ -44,7 +81,8 @@ func (d *DataSource) GetAllUsers(urlQuery url.Values) ([]model.User, int, int) {
 	var stringI string
 	sliceBson := []bson.M{}
 	sortDoc := bson.D{}
-	limit, _ := strconv.Atoi(urlQuery["length"][0])
+	limit := 0
+	limit, _ = strconv.Atoi(urlQuery["length"][0])
 	skips, _ := strconv.Atoi(urlQuery["start"][0])
 	sortValue := 1
 	for i := 0; i < len(userCols) - 2; i++ {
@@ -245,4 +283,316 @@ func (d *DataSource) GetAllBusinessCategories() []model.Category {
 	}
 	Db.Close()
 	return categories
+}
+
+func (d *DataSource) DeletePicture(businessID string, userID string, fileID string, imageType string) bool {
+	var folder string
+	if imageType == "gallery" {
+		folder = "gallery"
+	} else if imageType == "profile" {
+		folder = "profile"
+	} else if imageType == "cover" {
+		folder = "cover"
+	}
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(businessCol)
+	if err := c.Update(bson.M{"_id": bson.ObjectIdHex(businessID)}, bson.M{"$pull": bson.M{folder: fileID}}); err != nil {
+		log.Printf(err.Error())
+		return false
+	}
+	path := config.GetAppPath()+"resources/uploads/"+userID+"/"+businessID+"/"+folder+"/"+fileID
+	err := os.Remove(path)
+	if err != nil {
+		//log.Printf(err.Error())
+		return false
+	}
+	return true
+}
+
+func (d *DataSource) AddPicture(userID string, businessID string, imageFormat string, imageType string, file multipart.File) (string, string) {
+	var image image.Image
+	var resizeWidth int
+
+	var folder string
+	if imageType == "gallery" {
+		folder = "gallery"
+		resizeWidth = 1024
+	} else if imageType == "profile" {
+		folder = "profile"
+		resizeWidth = 160
+	} else if imageType == "cover" {
+		folder = "cover"
+		resizeWidth = 840
+	}
+	
+	if imageFormat == "image/jpeg" {
+		image, _ = jpeg.Decode(file)
+	} else if imageFormat == "image/png" {
+		image, _ = png.Decode(file)
+	}
+
+	b := image.Bounds()
+	imgWidth := b.Max.X
+	imgHeight := b.Max.Y
+	//thumbSize := imgHeight
+	
+	ratio := "1"
+	
+	extension := ".jpg"
+	
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	fname := ""
+	for i := 0; i < 30; i++ {
+		index := r.Intn(len(chars))
+		fname += chars[index : index+1]
+	}
+	fname += fname+"="+ratio
+	
+	fname += extension
+	
+		
+	var userFolder = config.GetAppPath()+"resources/uploads/"+userID+"/"+businessID+"/"+folder+"/"
+	if _, err := os.Stat(userFolder); os.IsNotExist(err) {
+		os.MkdirAll(userFolder, 0711)
+	}
+	
+
+	if imgHeight >= imgWidth {
+		ratio = "0"
+		//thumbSize = imgWidth
+	}
+	//img1  := imaging.CropAnchor(image, thumbSize, thumbSize, imaging.Center)
+	
+	newImageResized := imaging.Resize(image, resizeWidth, 0, imaging.Lanczos)
+	err := imaging.Save(newImageResized, userFolder+fname)
+	if err != nil {
+		log.Println("Save failed: %v", err)
+	}
+
+	
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(businessCol)
+	if err := c.Update(bson.M{"_id": bson.ObjectIdHex(businessID), "user_id": bson.ObjectIdHex(userID)}, bson.M{"$push": bson.M{folder: fname}}); err != nil {
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	
+	
+	url := "/static/uploads/"+userID+"/"+businessID+"/"+folder+"/"+fname
+	return fname, url
+}
+
+func (d *DataSource) InsertBusinessComment(chatMessage ChatMessage) bool {
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminBusinessChat)
+	if err := c.Insert(&chatMessage); err != nil {
+		log.Printf(err.Error())
+		return false
+	}
+	return true
+}
+
+func (d *DataSource) GetCommentsByBusiness(businessID string) []ChatMessage {
+	chatMessage := []ChatMessage{}
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminBusinessChat)
+	if err := c.Find(bson.M{"business_id": bson.ObjectIdHex(businessID)}).All(&chatMessage); err != nil {	
+		log.Printf(err.Error())
+	}
+	return chatMessage
+}
+
+func (d *DataSource) GetCommentsById(Id string) ChatMessage {
+	chatMessage := ChatMessage{}
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminBusinessChat)
+	if err := c.Find(bson.M{"_id": bson.ObjectIdHex(Id)}).One(&chatMessage); err != nil {	
+		log.Printf(err.Error())
+	}
+	return chatMessage
+}
+
+func (d *DataSource) UpdateBusinessCommentByID(chatID string, userID bson.ObjectId, msg string) bool {
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminBusinessChat)
+	if err := c.Update(bson.M{"_id":bson.ObjectIdHex(chatID), "author.id": userID}, bson.M{"$set": bson.M{"text": msg}}); err != nil {
+		log.Printf(err.Error())
+		return false
+	}
+	return true
+}
+
+func (d *DataSource) AddNewActivity(activity ActivityType) bool {
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminActivityType)
+	if err := c.Insert(&activity); err != nil {
+		log.Printf(err.Error())
+		return false
+	}
+	return true
+}
+
+func (d *DataSource) GetAllActivitiesTD(urlQuery url.Values) ([]ActivityType, int, int) {
+	activityType := []ActivityType{}
+	query := bson.M{}
+	limit := 0
+	limit, _ = strconv.Atoi(urlQuery["length"][0])
+	skips, _ := strconv.Atoi(urlQuery["start"][0])
+	searchValue := urlQuery["search[value]"][0]
+	if searchValue != "" {
+		query["name"] = bson.M{"$regex": "^"+searchValue}
+	}
+	//sortDoc := bson.D{}
+	
+	
+	pm := bson.M{
+        "$match" :query,
+	}
+	
+	pl := bson.M{
+        "$limit" :limit,
+	}
+	
+	ps := bson.M{
+        "$skip" :skips,
+	}
+	po := bson.M{
+
+		"$sort": bson.D {
+			bson.DocElem{Name: "name", Value: 1},
+		},
+	}
+
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminActivityType)
+	
+	pipe := c.Pipe([]bson.M{pm, po, ps, pl })
+	if err := pipe.All(&activityType); err != nil {	
+		log.Printf(err.Error())
+	}
+	fmt.Println(activityType)
+	CountFiltered, err := c.Find(query).Count()
+	if err != nil {
+		panic(err)
+	}
+	Count, err := c.Find(nil).Count()
+	if err != nil {
+		panic(err)
+	}
+	Db.Close()
+	return activityType, CountFiltered, Count
+}
+
+func (d *DataSource) UpdateActivityType(activity ActivityType) bool {
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminActivityType)
+	if err := c.Update(bson.M{"_id": activity.Id,}, activity); err != nil {
+		log.Printf(err.Error())
+		return false
+	}
+	c = Db.C(adminBusinessChat)
+	if _, err := c.UpdateAll(bson.M{"activity_type._id": activity.Id,}, bson.M{"$set": bson.M{"activity_type.name": activity.Name}}); err != nil {
+		log.Printf(err.Error())
+		return false
+	}
+	Db.Close()
+	return true
+}
+
+func (d *DataSource) DeleteActivityType(activity bson.ObjectId) bool {
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminActivityType)
+	if err := c.Remove(bson.M{"_id": activity}); err != nil {
+		log.Printf(err.Error())
+		return false
+	}
+	Db.Close()
+	return true
+}
+
+func (d *DataSource) GetAllActivities() []ActivityType {
+	activityType := []ActivityType{}
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminActivityType)
+	if err := c.Find(nil).All(&activityType); err != nil {	
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return activityType
+}
+
+func (d *DataSource) GetActivityTypeByUser(userID string) []bson.M {
+	results := []bson.M{}
+	query := bson.M{}
+	if userID == "" {
+		userID = "59b018561aa95138d0269de2"
+	}
+	query["author._id"] = bson.ObjectIdHex(userID)
+	
+	pm := bson.M{
+        "$match" :query,
+	}
+	
+	pj := bson.M{
+        "$project": bson.M {"week": bson.M{"$isoWeek": "$time"}, "year": bson.M{"$year": "$time"}, "activity_type": 1},
+	}
+	
+	pp := bson.M{
+        "$group": bson.M {
+			//"_id": bson.M{"$week": "$time" },
+			"_id": bson.M{"year":"$year", "week": "$week", "activity_type": "$activity_type.name"},
+			//"activity_types": bson.M{"$push": "$activity_type.name" },
+			"total": bson.M{"$sum":1},
+			//"count": bson.M{"$sum": 1},
+		},
+	}
+	
+	pg := bson.M{
+        "$group": bson.M {
+			"_id": bson.M{"week":"$_id.week", "year":"$_id.year"},
+			"activity_types": bson.M{"$addToSet": bson.M{"name": bson.M{"$ifNull": []interface{}{"$_id.activity_type", "Unspecified"}}, "sum": "$total"}},
+		},
+	}
+	
+	pe := bson.M{
+		"$sort": bson.D {
+			bson.DocElem{Name: "_id.year", Value: 1},
+			bson.DocElem{Name: "_id.week", Value: 1},
+			
+		},
+	}
+
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminBusinessChat)
+	
+	pipe := c.Pipe([]bson.M{pm, pj, pp, pg, pe})
+	if err := pipe.All(&results); err != nil {	
+		log.Printf(err.Error())
+	}
+	return results
+}
+
+func (d *DataSource) GetAllAdmins() []bson.M {
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(userCol)
+	admins := []bson.M{}
+	
+	if err := c.Find(bson.M{"admin": 1}).Select(bson.M{"firstname": 1, "lastname": 1}).All(&admins); err != nil {
+		log.Printf(err.Error())
+	}
+	Db.Close()
+	return admins
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/kataras/iris/sessions/sessiondb/file"
 	"app/config"
+	"time"
 )
 
 var (
@@ -15,7 +16,9 @@ var (
 	Sessions = sessions.New(sessions.Config{
 		Cookie: cookieName,
 		Encode: secureCookie.Encode,
+		Expires: time.Hour * 24,
 		Decode: secureCookie.Decode,
+		DisableSubdomainPersistence: false,
 	})
 
 )

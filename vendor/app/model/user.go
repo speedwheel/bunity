@@ -20,6 +20,7 @@ type (
 		Email  string `json:"email" bson:"email"  form:"email" facebook:"email"`
 		Image string `json:"image" bson:"image"  form:"image" facebook:"url"`
 		Liked []bson.ObjectId `json:"liked" bson:"liked" form:"liked,omitempty" facebook:"-"`
+		Admin uint8 `json:"admin" bson:"admin"  form:"admin" facebook:"-"`
 		Account Account
 		Business []BusinessS `bson:"business"`
 		
@@ -106,11 +107,7 @@ func SetUserSession(ctx context.Context) {
 	//usr := usrInterface.(*User)
 	session.Set("userAuth", ctx.Values().Get("auth"))
 	session.Set("user", ctx.Values().Get("user"))
-	if ctx.Values().Get("userAuth").(bool) {
-		ctx.Redirect("/profile")
-		return
-	}
-	ctx.Redirect("/login")
+
 }
 
 

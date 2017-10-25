@@ -8,9 +8,11 @@ import(
 	"github.com/speedwheel/bunity/admin/user"
 	"app/shared/session"
 	"github.com/speedwheel/bunity/admin"
+	"app/config"
+	"github.com/kataras/iris/websocket"
+	"app/shared/websockets"
+
 )
-
-
 
 func Routes(app *iris.Application) {
 	app.Get("/", controller.Home)
@@ -28,8 +30,7 @@ func Routes(app *iris.Application) {
 	app.Get("/{businessID:string}/webresults/{pageCount:int}", controller.BusinessProfileWeb)
 	app.Get("/{businessID:string}/internalresults", controller.BusinessProfileInternal)
 	app.Get("/{businessID:string}/internalresults/{pageCount:int}", controller.BusinessProfileInternal)
-	
-	
+
 	app.Get("/users/set_password/:eal_exp", controller.CheckForgotToken)
 	app.Post("/users/set_password/:eal_exp", controller.UpdatePassword)
 	
@@ -84,7 +85,15 @@ func Routes(app *iris.Application) {
 		ctx.Next()
 	}).Layout("admin/layouts/default.html")
 	{
+		office.StaticWeb("/adminstatic", config.GetAppPath()+"admin/resources")
+		office.Any("/iris-ws.js", func(ctx iris.Context) {
+			ctx.Write(websocket.ClientSource)
+		})
 		users := user.NewDataSource()
+		ws := websockets.WebsocketInit()
+		office.Get("/notifications", ws.Handler())
+		ws.OnConnection(user.BusinessChatNotif)
+		
 		office.Controller("/", new(user.Controller), session.Sessions, users)
 	}
 }

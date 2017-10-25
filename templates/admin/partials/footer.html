@@ -3,6 +3,28 @@
 
 	</div>
 	<!-- /page container -->
-<script type="text/javascript" src="http://bunity.com:8081/adminstatic/js/custom.js"></script>
+<script>
+
+var businessCategs = Array.from({{.businessCategs}});
+var countryList = Array.from({{.countries}});
+var statesUSA = Array.from({{.statesUSA}});
+var statesCanada = Array.from({{.statesCanada}});
+var statesAustralia = Array.from({{.statesAustralia}});
+var yearsBusiness = Array.from({{.yearsBusiness}});
+var numberEmployees = Array.from({{.numberEmployees}});
+var sizeBusiness = Array.from({{.sizeBusiness}});
+var relationshipBusiness = Array.from({{.relationshipBusiness}});
+var activitesType = Array.from({{.activityType}});
+var userName = {{.userName}};
+var userid = {{.userID}};
+var timeNow = {{.timeNow}};
+
+var domain = {{.domain}};
+var port = {{.port}};
+console.log(domain);
+
+
+</script>
+<script type="text/javascript" src="/adminstatic/js/custom.js"></script>
 </body>
 </html>
