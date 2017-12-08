@@ -5,7 +5,6 @@ import(
 	//"app/shared/websockets"
 	"fmt"
 	"sync"
-	"app/model"
 	ses "app/shared/session"
 )
 
@@ -27,9 +26,9 @@ type Ws struct {
 func BusinessChatNotif(c websocket.Connection) {
 	ctx := c.Context()
 	session := ses.Sessions.Start(ctx)
-	userSession := session.Get("user").(model.User)
+	adminID := session.GetString("adminID")
 	mutex.Lock()
-	Conn[c] = userSession.Id.Hex()
+	Conn[c] = adminID
 	mutex.Unlock()
 	fmt.Println(Conn)
 	
@@ -39,7 +38,7 @@ func BusinessChatNotif(c websocket.Connection) {
 		comment := source.GetCommentsById(commentID)
 		
 		for k, id := range Conn {
-			if id != userSession.Id.Hex()  {
+			if id != adminID  {
 				k.Emit("newBusinessChat", comment)
 				
 			}
@@ -49,7 +48,7 @@ func BusinessChatNotif(c websocket.Connection) {
 		source := NewDataSource()
 		commentsBusiness := source.GetCommentsByBusiness(businessID)
 		for k, id := range Conn {
-			if id != userSession.Id.Hex()  {
+			if id != adminID  {
 				k.Emit("refreshCommBiz", commentsBusiness)
 			}
 		}

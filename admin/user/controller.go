@@ -4,9 +4,10 @@ import(
 	"github.com/kataras/iris"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
-	"app/model"
+	//"app/model"
 	data "app/controller"
 	"time"
+	"fmt"
 )
 
 
@@ -15,6 +16,8 @@ const (
 	PathUsers = "admin/user/users"
 	PathUserSettings = "admin/user/settings"
 	PathUserStatistics = "admin/user/statistics"
+	PathOwner = "admin/user/owner"
+	Login = "admin/login"
 )
 
 type Controller struct {
@@ -26,10 +29,20 @@ type Controller struct {
 func (c *Controller) BeginRequest(ctx iris.Context) {
 	c.SessionController.BeginRequest(ctx)
 	//c.Ws.Conn.OnConnection(c.Ws.BusinessChatNotif)
-	c.Data["Path"] = ctx.Path()
+	path := ctx.Path()
+	c.Data["Path"] = path
+	if !c.isLoggedIn() {
+		if(path != "/login") {
+			c.Path = "/login"
+			c.Status = 301
+		}
+	}
+	
 }
 
+
 func (c *Controller) Get() {
+	fmt.Println(c.Session.Get("adminID"))
 	c.Tmpl = PathHome+".html"
 }
 
@@ -44,10 +57,11 @@ func (c *Controller) GetUsers() {
 	c.Data["numberEmployees"] = data.NrEmployees
 	c.Data["sizeBusiness"] = data.SizeBusiness
 	c.Data["relationshipBusiness"] = data.RelationshipBusiness
-	c.Data["userName"] = c.Session.Get("user").(model.User).Firstname //+ " " + c.Session.Get("user").(model.User).Lastname
-	c.Data["userID"] = c.Session.Get("user").(model.User).Id
+	c.Data["userName"] = c.Session.GetString("adminUser")
+	c.Data["userID"] = c.Session.GetString("adminID")
 	c.Data["timeNow"] = time.Now()
 	c.Data["activityType"] = c.Source.GetAllActivities()
+	c.Data["adminList"] = c.Source.GetAllAdmins()
 	c.Tmpl = PathUsers+".html"
 }
 
@@ -60,6 +74,59 @@ func (c *Controller) GetUsersStatistics() {
 	c.Data["activityWeek"] = results
 	c.Data["adminList"] = c.Source.GetAllAdmins()
 	c.Tmpl = PathUserStatistics+".html"
+}
+
+func (c *Controller) GetLogin() {
+	if(c.isLoggedIn()) {
+	fmt.Println("redirect")
+		c.Ctx.Redirect("/")
+		return
+	}
+	c.Layout = "admin/layouts/login.html"
+	c.Tmpl = Login+".html"
+}
+
+func (c *Controller) PostLoginadmin() {
+	var (
+		username = c.Ctx.FormValue("username")
+		password = c.Ctx.FormValue("password")
+	)
+	u, err := c.Source.AdminLogin(username, password)
+
+	
+	c.Session.Set("adminID", u.Id.Hex())
+	c.Session.Set("adminUser", u.Username)
+	fmt.Println(err)
+	if(err == nil) {
+		fmt.Println("logged in")
+		c.Path = "/"
+		c.Status = 301
+		return
+	}
+	c.Path = "/login"
+	c.Status = 301
+	return
+}
+
+func (c *Controller) isLoggedIn() bool {
+	return c.getCurrentUserID() != ""
+}
+
+func (c *Controller) getCurrentUserID() string {
+	userID := c.Session.GetString("adminID")
+	return userID
+}
+
+func (c *Controller) logout() {
+	c.Session.Delete("adminID")
+	//c.Ctx.Redirect("/login")
+}
+func (c *Controller) AnyLogout() {
+	fmt.Println("logout")
+	if c.isLoggedIn() {
+		c.logout()
+	}
+	c.Ctx.Redirect("/login")
 }
 
 func (c *Controller) GetUserlist() {
@@ -165,12 +232,13 @@ func (c *Controller) PostPictureAddBy(businessID string) {
 
 func (c *Controller) PostBusinessComment() {
 	if c.Ctx.IsAjax() {
-		user := c.Session.Get("user").(model.User)
+		adminID := bson.ObjectIdHex(c.Session.GetString("adminID"))
+		adminUser := c.Session.GetString("adminUser")
 		chatMessage := ChatMessage{}
 		chatMessage.Id = bson.NewObjectId()
-		chatMessage.Author.Id = user.Id
+		chatMessage.Author.Id = adminID
 		chatMessage.Text = c.Ctx.FormValue("msg")
-		chatMessage.Author.Name = user.Firstname + " " + user.Lastname
+		chatMessage.Author.Name = adminUser
 		chatMessage.BusinessID = bson.ObjectIdHex(c.Ctx.FormValue("bizID"))
 		chatMessage.Time = time.Now()
 		if c.Ctx.FormValue("parentID") != "" {
@@ -192,10 +260,10 @@ func (c *Controller) PostBusinessComment() {
 
 func (c *Controller) PutBusinessComment() {
 	if c.Ctx.IsAjax() {
-		user := c.Session.Get("user").(model.User)
+		adminID := bson.ObjectIdHex(c.Session.GetString("adminID"))
 		chatID := c.Ctx.FormValue("postID")
 		msg := c.Ctx.FormValue("msg")
-		response := c.Source.UpdateBusinessCommentByID(chatID,user.Id, msg)
+		response := c.Source.UpdateBusinessCommentByID(chatID, adminID, msg)
 		
 		c.Ctx.JSON(map[string]bool{"success": response})
 	}
@@ -242,6 +310,28 @@ func (c *Controller) DeleteActivitytypeBy(activity string) {
 func (c *Controller) GetActivitytypeBy(userID string) {
 	results := c.Source.GetActivityTypeByUser(userID)
 	c.Ctx.JSON(map[string]interface{}{"data": results})
+}
+
+func (c *Controller) GetUserOwner() {
+	c.Data["adminList"] = c.Source.GetAllAdmins()
+	c.Tmpl = PathOwner+".html"
+}
+
+func (c *Controller) GetOwnerBusinessBy(userID string) {
+	c.Ctx.JSON(map[string]interface{}{"business": c.Source.GetBusinesses(), "owned": c.Source.GetOwnedBusinessesID(userID)["owned"]})
+}
+
+func (c *Controller) PostOwnerBusinessBy(userID string) {
+	ok := c.Source.UpdateOwner(c.Ctx.PostValues("businesses[]"), userID)
+	c.Ctx.JSON(map[string]interface{}{"success": ok})
+}
+
+func (c *Controller) PostOwnerChangeBy(adminID string) {
+	var (
+		users = c.Ctx.PostValues("users[]")
+		businesses = c.Ctx.PostValues("businesses[]")
+	)
+	c.Source.UpdateAdminOwnerUsersPage(users, businesses, adminID)
 }
 
 

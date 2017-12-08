@@ -3,6 +3,7 @@ package user
 import(
 	"app/model"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2"
 	"app/shared/db"
 	"log"
 	"net/url"
@@ -20,7 +21,16 @@ import(
 	"mime/multipart"
 	"time"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 )
+
+type Admin struct {
+	Id     bson.ObjectId `json:"id" bson:"_id"  form:"-"`
+	Username  string `json:"username" bson:"username"  form:"username" facebook:"username"`
+	Email  string `json:"email" bson:"email"  form:"email" facebook:"email"`
+	Password string `json:"password" bson:"password,omitempty" form:"password,omitempty"`
+	Owned []bson.ObjectId `json:"owned,omitempty" bson:"owned,omitempty"  form:"owned,omitempty"`
+}
 
 const (
 	userCol = "users"
@@ -28,6 +38,7 @@ const (
 	businessCategCol = "categories"
 	adminBusinessChat = "adminBusinessChat"
 	adminActivityType = "adminActivityType"
+	adminUser = "admin"
 	chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
@@ -72,6 +83,29 @@ func NewDataSource() *DataSource {
 		User: model.User{},
 		Businesses: []model.Business{},
 	}
+}
+
+func (d *DataSource) AdminLogin(username, password string) (Admin, error) {
+	ok := true
+	cfg := config.Init()
+	var err error
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminUser)
+	admin := Admin{}
+	
+	if err = c.Find(bson.M{"username": username}).One(&admin); err != nil {
+		ok = false
+	}
+	Db.Close()
+	if !ok {
+		return Admin{}, err
+	}
+	
+	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password+cfg.User.SecretKey)); err != nil {
+		return Admin{}, err
+	}
+	return admin, nil
 }
 
 func (d *DataSource) GetAllUsers(urlQuery url.Values) ([]model.User, int, int) {
@@ -305,6 +339,7 @@ func (d *DataSource) DeletePicture(businessID string, userID string, fileID stri
 	err := os.Remove(path)
 	if err != nil {
 		//log.Printf(err.Error())
+		Db.Close()
 		return false
 	}
 	return true
@@ -390,6 +425,7 @@ func (d *DataSource) InsertBusinessComment(chatMessage ChatMessage) bool {
 	c := Db.C(adminBusinessChat)
 	if err := c.Insert(&chatMessage); err != nil {
 		log.Printf(err.Error())
+		Db.Close()
 		return false
 	}
 	return true
@@ -421,7 +457,7 @@ func (d *DataSource) UpdateBusinessCommentByID(chatID string, userID bson.Object
 	Db := db.MgoDb{}
 	Db.Init()
 	c := Db.C(adminBusinessChat)
-	if err := c.Update(bson.M{"_id":bson.ObjectIdHex(chatID), "author.id": userID}, bson.M{"$set": bson.M{"text": msg}}); err != nil {
+	if err := c.Update(bson.M{"_id":bson.ObjectIdHex(chatID), "author._id": userID}, bson.M{"$set": bson.M{"text": msg}}); err != nil {
 		log.Printf(err.Error())
 		return false
 	}
@@ -497,11 +533,13 @@ func (d *DataSource) UpdateActivityType(activity ActivityType) bool {
 	c := Db.C(adminActivityType)
 	if err := c.Update(bson.M{"_id": activity.Id,}, activity); err != nil {
 		log.Printf(err.Error())
+		Db.Close()
 		return false
 	}
 	c = Db.C(adminBusinessChat)
 	if _, err := c.UpdateAll(bson.M{"activity_type._id": activity.Id,}, bson.M{"$set": bson.M{"activity_type.name": activity.Name}}); err != nil {
 		log.Printf(err.Error())
+		Db.Close()
 		return false
 	}
 	Db.Close()
@@ -514,6 +552,7 @@ func (d *DataSource) DeleteActivityType(activity bson.ObjectId) bool {
 	c := Db.C(adminActivityType)
 	if err := c.Remove(bson.M{"_id": activity}); err != nil {
 		log.Printf(err.Error())
+		Db.Close()
 		return false
 	}
 	Db.Close()
@@ -587,12 +626,103 @@ func (d *DataSource) GetActivityTypeByUser(userID string) []bson.M {
 func (d *DataSource) GetAllAdmins() []bson.M {
 	Db := db.MgoDb{}
 	Db.Init()
-	c := Db.C(userCol)
+	c := Db.C(adminUser)
 	admins := []bson.M{}
 	
-	if err := c.Find(bson.M{"admin": 1}).Select(bson.M{"firstname": 1, "lastname": 1}).All(&admins); err != nil {
+	if err := c.Find(nil).Select(bson.M{"username": 1, "owned": 1}).All(&admins); err != nil {
 		log.Printf(err.Error())
 	}
 	Db.Close()
 	return admins
+}
+
+func (d *DataSource) GetBusinesses() []bson.M {
+	var businesses []bson.M
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C("businesses")
+	if err := c.Find(nil).Select(bson.M{"name": 1}).All(&businesses); err != nil {	
+		log.Printf(err.Error())
+	}
+	
+	Db.Close()
+	return businesses
+}
+
+func (d *DataSource) GetOwnedBusinessesID(adminIDHex string) bson.M {
+	adminID := bson.ObjectIdHex(adminIDHex)
+	var businesses bson.M
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminUser)
+	if err := c.Find(bson.M{"_id": adminID}).Select(bson.M{"owned": 1, "_id":0}).One(&businesses); err != nil {	
+		log.Printf(err.Error())
+	}
+	
+	Db.Close()
+	fmt.Println(businesses)
+	return businesses
+}
+
+func (d *DataSource) UpdateOwner(businessesHex []string, adminIDHex string) bool {
+	ok := true
+	adminID := bson.ObjectIdHex(adminIDHex)
+	count := len(businessesHex)
+	businesses := make([]bson.ObjectId, count, count)
+	for i, value := range businessesHex {
+		businesses[i] = bson.ObjectIdHex(value)
+	}
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(adminUser)
+	if err := c.Update(bson.M{"_id":adminID}, bson.M{"$set": bson.M{"owned": businesses}}); err != nil {
+		log.Printf(err.Error())
+	}
+	c = Db.C(businessCol)
+	
+
+	if _, err := c.UpdateAll(bson.M{"owner": adminID}, bson.M{"$set": bson.M{"owner": ""}}); err != nil {
+		ok = false
+	}
+	if _, err := c.UpdateAll(bson.M{"_id": bson.M{"$in": businesses}}, bson.M{"$set": bson.M{"owner": adminID}}); err != nil {
+		ok = false
+	}
+	Db.Close()
+	return ok
+}
+
+func (d *DataSource) UpdateAdminOwnerUsersPage(usersHex []string, businessesHex []string, adminIDHex string) bool {
+	var err error
+	var da  *mgo.ChangeInfo
+	ok := true
+	adminID := bson.ObjectIdHex(adminIDHex)
+	count := len(usersHex)
+	users := make([]bson.ObjectId, count, count)
+	for i, value := range usersHex {
+		users[i] = bson.ObjectIdHex(value)
+	}
+	count = len(businessesHex)
+	businesses := make([]bson.ObjectId, count, count)
+	for i, value := range businessesHex {
+		businesses[i] = bson.ObjectIdHex(value)
+	}
+	
+	Db := db.MgoDb{}
+	Db.Init()
+	c := Db.C(businessCol)
+	if _, err = c.UpdateAll(bson.M{"_id": bson.M{"$in": businesses}}, bson.M{"$set": bson.M{"owner": adminID}}); err != nil {
+		ok = false
+	}
+	
+	c = Db.C(adminUser)
+	if da, err = c.UpdateAll(bson.M{"owned": bson.M{"$in": businesses}}, bson.M{"$pullAll": bson.M{"owned": businesses}}); err != nil {
+		ok = false
+	}
+	
+	if err := c.Update(bson.M{"_id":adminID}, bson.M{"$addToSet": bson.M{"owned": bson.M{"$each": businesses}}}); err != nil {
+		ok = false
+	}
+	fmt.Println(da, businesses)
+	return ok
+	
 }

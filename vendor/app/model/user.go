@@ -23,6 +23,7 @@ type (
 		Admin uint8 `json:"admin" bson:"admin"  form:"admin" facebook:"-"`
 		Account Account
 		Business []BusinessS `bson:"business"`
+		Owned []bson.ObjectId `json:"owned,omitempty" bson:"owned,omitempty"  form:"owned,omitempty" facebook:"-"`
 		
 	}
 	
@@ -58,7 +59,7 @@ type (
 		Likes []bson.ObjectId `json:"likes" bson:"likes" form:"likes,omitempty" facebook:"-"`
 		Verified uint8 `json:"check" bson:"check" form:"check,omitempty" facebook:"-"`
 		Premium uint8 `json:"pro" bson:"pro" form:"pro,omitempty" facebook:"-"`
-		
+		Owner bson.ObjectId `json:"owner,omitempty" bson:"owner,omitempty"  form:"owner,omitempty" facebook:"-"`
 		Social
 		Map
 	}
@@ -67,6 +68,11 @@ type (
 		Id  bson.ObjectId `json:"id" bson:"_id"  form:"-"`
 		Name string `json:"name" bson:"name" form:"name,omitempty"`
 		NameSplit []string `json:"nameSplit" bson:"namearr" form:"nameSplit,omitempty" facebook:"-"`
+	}
+	
+	OwnerBusiness struct {
+		Id  bson.ObjectId `json:"id" bson:"_id"  form:"-"`
+		Name string `json:"name" bson:"name" form:"name,omitempty"`
 	}
 	
 	Address struct {

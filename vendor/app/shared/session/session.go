@@ -18,13 +18,12 @@ var (
 		Encode: secureCookie.Encode,
 		Expires: time.Hour * 24,
 		Decode: secureCookie.Decode,
-		DisableSubdomainPersistence: false,
+		DisableSubdomainPersistence: true,
 	})
 
 )
 
 func init() {
-	
 	db, _ := file.New(config.GetAppPath()+"/sessions/", 0666)
 	db.Async(true)
 	Sessions.UseDatabase(db)

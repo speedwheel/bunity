@@ -158,6 +158,9 @@
 #atjs {
 	min-height:36px;
 }
+.daterangepicker {
+	z-index:99999!important;
+}
 @media (min-width: 1250px) {
 	  .businessEditModal .modal-dialog {
 		width: 1200px;

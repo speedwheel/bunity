@@ -56,7 +56,7 @@ func KazeliApp() *iris.Application {
 		ctx.ViewData("port", "8080")
 
 		if ctx.Path() != "/userchat" && ctx.Path() != "/iris-ws.js" && ctx.Path() != "/notifications" {
-			ctx.Gzip(true)
+			ctx.Gzip(false)
 		}
 		ctx.Next()
 	})	

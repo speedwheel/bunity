@@ -64,8 +64,24 @@
 						</div>
 
 						<div class="panel-body">
-							
+						{{if .adminList}}
+							<div class="row">
+								<div class="col-md-2">
+									<select class="selectAdminOwner">
+										<option value="-1"></option>
+										{{range .adminList}}
+											<option value="{{._id.Hex}}">{{.username}}</option>
+										{{end}}
+									</select>
+								</div>
+								<div class="col-md-2">
+									<a class="btn btn-primary changeOwner" href="#">Submit</a>
+								</div>
+							</div>
+						{{end}}
+						
 						</div>
+						
 
 						<table id="userListTable" class="table">
 							<thead>

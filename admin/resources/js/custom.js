@@ -12,6 +12,7 @@ var editCommentFlag = false;
 var socket = new Ws("ws://office.bunity.com:"+port+"/notifications");
 var $userListTable = $('#userListTable');
 var $activityTypeTable = $('#activityTypeTable');
+var ownerLisSelect;
 
 $(document).ready( function() {
 	if($userListTable.length) {
@@ -21,14 +22,142 @@ $(document).ready( function() {
 		settingsTable();
 	}
 	$('.selectAdmin').select2();
+	$('.selectAdminOwner').select2({
+		placeholder: {
+			text: "Select an admin",
+			id: "-1"
+		},
+		allowClear: true
+	});
 	if($("#flipbookStats").length) {
 		highChartsAll();
 	}
+	
+	// Multiple owner selection
+    ownerLisSelect = $('.listbox-no-selection').bootstrapDualListbox({
+        preserveSelectionOnMove: 'moved',
+        moveOnSelect: false
+    });
+	
+	selectAdminOwner();
 	//BusinessesListTable();
   // Warning alert
+  
+	$('.changeOwner').on('click', function(e) {
+		e.preventDefault();
+		var adminID = $('.selectAdminOwner ').val();
+		var selectedUsers = dt.rows( { selected: true } ).data();
+		if(selectedUsers.length <= 0) {
+			return;
+		}
+		console.log(dt.rows( { selected: true } ).count())
+		var selectedUserArr = [];
+		var selectedBizArr = [];
+		for(var i = 0; i < selectedUsers.length; i++) {
+			var currentUser = selectedUsers[i];
+			console.log(currentUser)
+			selectedUserArr.push(currentUser.id);
+			if(currentUser.Business.length > 0) {
+				for(var j = 0; j < currentUser.Business.length; j++) {
+					selectedBizArr.push(currentUser.Business[j].id);
+				}
+				
+			}
+		}
+		console.log(selectedBizArr);
+		$.ajax({
+			type:"POST",
+			url:"/owner/change/"+adminID,
+			data: {users: selectedUserArr, businesses: selectedBizArr},
+			success: function(data) {
+				
+			},
+			dataType: 'json',
+		});
+	});
         
 
 });
+
+function selectAdminOwner() {
+	$('.submitOwner').prop("disabled",true);
+	var _this;
+	$('.selectAdminOwner').on('input select2:select', function() {
+		$(".listbox-no-selection option").remove();
+		ownerLisSelect.bootstrapDualListbox('refresh', true);
+		$('.submitOwner').prop("disabled",true);
+		_this = $(this);
+		var adminID = _this.val();
+		if(adminID != "") {
+			$.ajax({
+				type:"GET",
+				url:"/owner/business/"+adminID,
+				success: function(data) {
+					var owned = data.owned;
+					$('.submitOwner').prop("disabled",false);
+					var html = '';
+					var b;
+					var selected = "";
+					
+					for(var i = 0; i < data.business.length; i++) {
+						b = data.business[i];
+						if(owned != null) {
+							for(var j = 0; j < owned.length; j++) {
+								var bizID = owned[j];
+								selected = "";
+								if(bizID == b._id) {
+									selected = "selected"
+									break;
+								}
+							}
+						}
+						html += '<option val="'+b._id+'" '+selected+'>'+b.name+'</option>';
+					}
+					ownerLisSelect.append(html);
+					ownerLisSelect.bootstrapDualListbox('refresh', true);
+				},
+				dataType: 'json',
+			});
+		}
+	});
+	
+	$('.selectAdminOwner').on('input select2:unselect', function() {
+		$(".listbox-no-selection option").remove();
+		ownerLisSelect.bootstrapDualListbox('refresh', true);
+		$('.submitOwner').prop("disabled",true);
+	});
+	
+	$('.submitOwner').on('click', function() {
+		var adminID = _this.val();
+		var b = $('.ownerBusinessList option:selected').map(function(){return $(this).attr("val");}).get();
+		if(adminID == undefined) {
+			return false;
+		}
+		
+		
+		$.ajax({
+			type:"POST",
+			url:"/owner/business/"+adminID,
+			data:{
+				businesses: b,
+			},
+			success: function(data) {
+				var opts = {};
+				opts.title = "Successs!";
+				opts.text = "Owner businesses were updated successfully";
+				opts.type = "success";
+				opts.icon = 'icon-checkmark3';
+				new PNotify(opts);
+			},
+			dataType: 'json',
+		});
+	});
+}
+
+
+function OwnerList() {
+
+}
 
 function UserListTable() {
 	var showKey = "showBusinesses";
@@ -65,6 +194,7 @@ function UserListTable() {
             lengthMenu: '<span>Show:</span> _MENU_',
             paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' }
         },
+		
 		"columns": [
 
 			{
@@ -104,7 +234,7 @@ function UserListTable() {
 				var rowS = this;
 				var rowData = this.data();
 				var hideShow = $(".hideShowBtn");
-	
+		
 				if(rowData.Business.length < 1) {
 					
 					$userListTable.find("#"+rowData.id+" .details-control").removeClass("details-control");
@@ -127,7 +257,7 @@ function UserListTable() {
     });
 
 	dt.on( 'select deselect draw', function ( e, dt, type, indexes ) {
-		console.log($("tbody .dt-checkboxes:checked").length);
+		
 		if ( $("tbody .dt-checkboxes:checked").length == $('tbody .dt-checkboxes').length) {
 			$("thead tr").removeClass("indeterminate");
 			$("thead tr").addClass("selected");
@@ -187,7 +317,7 @@ function UserListTable() {
 	$("#userListTable").on("click", ".businessDeleteBtn", function() {
 		userID = $(this).parents('tr').last().prev().attr("id");
 		bizID = $(this).closest('tr').data("id");
-		console.log(bizID);
+		
 		//$('.popupContainer').html(confirmDeleteModal);
 		bName = $(this).closest('tr').find(".tdBusinessName").text();
 		$(".deleteBusinessName strong").text(bName);
@@ -308,6 +438,13 @@ function UserListTable() {
 				//$(".chatInput").autogrow();
 				showBusinessComments(data.comments);
 				$(".activityTypeSelect").select2();
+				$(".NextAction").select2({
+					minimumResultsForSearch: -1
+				});
+				   // Single picker
+					$('.daterange-single').daterangepicker({ 
+						singleDatePicker: true
+					});
 				//#atjs
 				$('#atjs').atwho({
 					at: "#",
@@ -383,7 +520,7 @@ function UserListTable() {
 	$(".popupContainer").on("click", ".businessUpdate", function() {
 		var btnUpdate = $(this);
 		
-		console.log(businessModalFlag);
+		
 		btnUpdate.attr("disabled", true).prepend('<i class="icon-spinner2 spinner position-left"></i>');
 		var formSelector = $(".editBusinessForm");
 		var b = {};
@@ -718,6 +855,26 @@ var businessEditModal = '<div class="modal fade businessEditModal ">'+
 											'</div>'+		
 										'</div>'+
 									'</form>'+
+									'<hr></hr><h4>Next Action</h4>'+
+									'<div class="form-group">'+
+										'<div class="row">'+
+											'<div class="col-sm-3">'+
+												'<select class="form-control NextAction">'+
+													'<option value="email">Email</option>'+
+													'<option value="call">Call</option>'+
+													'<option value="other">Other</option>'+
+												'</select>'+
+											'</div>'+
+											'<div class="col-sm-3">'+
+												'<input type="text" class="form-control daterange-single" value="03/18/2017">'+
+												
+											'</div>'+
+											'<div class="col-sm-6">'+
+												'<textarea class="form-control"></textarea>'+
+											'</div>'+
+										'</div>'+
+										'<button type="submit" class="btn btn-default addNextAction">Add Action</button>'+
+									'</div>'+
 									'</div>'+
 									'<div class="col-sm-4">'+
 										//'<textarea name="chat" class="form-control content-group chatInput" placeholder="Enter your message..."></textarea>'+
@@ -756,9 +913,10 @@ var confirmDeleteModal = '<div class="modal fade confirmDeleteModal" tabindex="-
 	
 function format ( d ) {
 	var b = d.Business;
+
 	var html = '<table class="businessTable"><tbody>';
 	for (var i=0; i< b.length; i++) {
-		html += '<tr data-id="'+b[i].id+'"><td class="tdBusinessName">'+b[i].name+'</td><td class="actionBtns"><div class="btn-group btn-group-sm actionBtnsContainer">'+
+		html += '<tr data-id="'+b[i].id+'" data-owner="'+b[i].owner+'"><td class="tdBusinessName">'+b[i].name+'</td><td class="actionBtns"><div class="btn-group btn-group-sm actionBtnsContainer">'+
 									'<button type="button" class="businessEditBtn btn btn-sm btn-default"><i class="fa fa-pencil" aria-hidden="true"></i></button>' +
 									'<button type="button" class="businessDeleteBtn btn btn-sm btn-default"><i class="fa fa-trash" aria-hidden="true"></i></button>' +		
 									'</div></td></tr>';
@@ -874,7 +1032,6 @@ function in_array(array, name) {
 function initDescriptionBox() {
 	if (textDescriptionInit) {
 		tinymce.execCommand('mceAddEditor',true,'businessDescription');
-		console.log(1);
 	} else {
 	//if($("#businessDescription").length > 0) {
 		tinymce.init({
@@ -944,8 +1101,6 @@ function galleryUploadFunc(bizID, userID) {
 
 					myDropzone.files.push(mockFile);
 				}
-				console.log(myDropzone.options.maxFiles);
-				console.log(myDropzone.files.length);
 			}
 		},
 	error: function(file, message, xhr) {
@@ -983,13 +1138,12 @@ function galleryUploadFunc(bizID, userID) {
 
 	removedfile: function(file) {
 		var rmvFile = "";
-		console.log("delete file length: "+fileList.length);
 		if(fileList.length > 0) {
 		for(f=0;f<fileList.length;f++){
 
 			if(fileList[f].fileName == file.newName)
 			{
-				console.log("new: "+ fileList[f].fileName+"old: "+file.name);
+	
 				rmvFile = fileList[f].serverFileName;
 				fileList.splice(f,1);
 				//myDropzone.options.maxFiles = myDropzone.options.maxFiles + 1;
@@ -1124,7 +1278,7 @@ function galleryUploadFunc(bizID, userID) {
 
 				if(fileList2[f].fileName == file.newName)
 				{
-					console.log("new: "+ fileList2[f].fileName+"old: "+file.name);
+				
 					rmvFile = fileList2[f].serverFileName;
 					fileList2.splice(f,1);
 					//myDropzone.options.maxFiles = myDropzone.options.maxFiles + 1;
@@ -1262,7 +1416,7 @@ function galleryUploadFunc(bizID, userID) {
 
 				if(fileList3[f].fileName == file.newName)
 				{
-					console.log("new: "+ fileList3[f].fileName+"old: "+file.name);
+					
 					rmvFile = fileList3[f].serverFileName;
 					fileList3.splice(f,1);
 					//myDropzone.options.maxFiles = myDropzone.options.maxFiles + 1;
@@ -1728,7 +1882,7 @@ function highChartsAll() {
 				type:"GET",
 				url:"/activitytype/"+adminID,
 				success: function(data) {
-					console.log(chart);
+					
 					if(!isEmpty(chart)) {
 						chart.destroy();
 					}
